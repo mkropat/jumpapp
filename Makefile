@@ -64,7 +64,7 @@ $(PACKAGE_FILE): $(FILES)
 
 deb: jumpapp_$(VERSION)-1_all.deb
 
-jumpapp_$(VERSION)-1_all.deb: $(PACKAGE_FILE)
+jumpapp_$(VERSION)-1_all.deb: $(PACKAGE_FILE) debian/copyright
 	@hash dpkg-buildpackage 2>/dev/null || { \
 		echo "ERROR: can't find dpkg-buildpackage. Did you run \`sudo apt-get install debhelper devscripts\`?" >&2; exit 1; \
 	}
@@ -74,19 +74,23 @@ jumpapp_$(VERSION)-1_all.deb: $(PACKAGE_FILE)
 
 deb-src: jumpapp_$(VERSION)-1_source.changes
 
-jumpapp_$(VERSION)-1_source.changes: $(PACKAGE_FILE) $(PACKAGE_ORIG_FILE)
+jumpapp_$(VERSION)-1_source.changes: $(PACKAGE_FILE) $(PACKAGE_ORIG_FILE) debian/copyright
 	@hash dpkg-buildpackage 2>/dev/null || { echo "ERROR: can't find debuild. Did you run \`sudo apt-get install debhelper devscripts\`?" >&2; exit 1; }
 	tar xf "$<"
 	cp -r debian "$(PACKAGE_DIR)"
 	(cd "$(PACKAGE_DIR)"; debuild -S)
 
 $(PACKAGE_ORIG_FILE): $(PACKAGE_FILE)
-	cp "$^" "$@"
+	cp "$<" "$@"
+
+debian/copyright: LICENSE.txt
+	cp "$<" "$@"
 
 deb-clean:
 	-debian/rules clean
 	-rm -f *.build *.changes *.dsc *.debian.tar.gz *.orig.tar.bz2
 	-rm -rf $(PACKAGE_DIR)
+	-rm -f debian/copyright
 
 
 ### make rpm ###
