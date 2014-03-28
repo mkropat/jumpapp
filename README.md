@@ -21,7 +21,13 @@ for you.
 
 ## Installation
 
-### Ubuntu, Mint, Debian and Friends
+### Ubuntu and Linux Mint
+
+    sudo add-apt-repository ppa:mkropat/ppa
+    sudo apt-get update
+    sudo apt-get install jumpapp
+
+### Debian and Friends
 
     git clone https://github.com/mkropat/jumpapp.git
     cd jumpapp
@@ -40,7 +46,7 @@ for you.
 
     git clone https://github.com/mkropat/jumpapp.git
     cd jumpapp
-    sudo make install
+    make && sudo make install
 
 ## A Wrapper Around wmctrl(1)
 
