@@ -1,0 +1,170 @@
+#!/usr/bin/env bash
+
+show_usage() {
+    local cmd=$(basename "${BASH_SOURCE[0]}")
+    echo "Usage: $cmd [OPTION]... COMMAND [ARG]...
+
+Jump to (focus) the first open window for an application, if it's running.
+Otherwise, launch COMMAND (with opitonal ARGs) to start the application.
+
+Options:
+  -c NAME -- find window using NAME as WM_CLASS (instead of COMMAND)
+  -f      -- force COMMAND to launch if process found but no windows found
+  -i NAME -- find process using NAME as the command name (instead of COMMAND)
+  -n      -- do not fork into background when launching COMMAND"
+}
+
+main() {
+    local classid cmdid force fork=1
+    while getopts c:fhi:n opt; do
+        case "$opt" in
+            c) classid="$OPTARG" ;;
+            f) force=1 ;;
+            h) show_usage; exit 0 ;;
+            i) cmdid="$OPTARG" ;;
+            n) fork='' ;;
+        esac
+    done
+
+    shift $(( OPTIND - 1 ))
+    OPTIND=1
+
+    if (( ! $# )); then
+        show_usage
+        exit 0
+    fi
+
+    local cmd=$1
+    shift
+
+    check_for_prerequisites &&
+
+    classid="$classid" cmd="$cmd" cmdid="$cmdid" force="$force" fork="$fork" \
+        jumpapp "$@"
+}
+
+check_for_prerequisites() {
+    if ! has_command wmctrl; then
+        die 'Error: wmctrl(1) can not be found. Please install it to continue.'
+    fi
+}
+
+jumpapp() {
+    if [[ -z "$cmdid" ]]; then
+        local cmdid=$(basename "$cmd")
+    fi
+
+    if [[ -z "$classid" ]]; then
+        local classid=$cmdid
+    fi
+
+    local pids=( $(list_pids_for_command "$cmdid") )
+    local windowid="$(get_windowid_from_pids "${pids[@]}")"
+
+    if [[ "$windowid" ]]; then
+        focus_window_by_id "$windowid" || die "Error: unable to focus window for '$cmdid'"
+    elif focus_window_by_class "$classid"; then
+        : # if successful, we don't have to do anything
+    else
+        (( ${#pids[@]} == 0 )) || [[ "$force" ]]  ||
+            die "Error: found running process for '$cmdid', but found no window to jump to"
+        launch_command "$@"
+    fi
+}
+
+get_windowid_from_pids() {
+    local windowid desktop pid line
+    while read -r windowid desktop pid line; do
+        for target_pid in "$@"; do
+            if [[ "$pid" == "$target_pid" ]]; then
+                printf '%s\n' "$windowid"
+                return
+            fi
+        done
+    done < <(list_windows)
+}
+
+launch_command() {
+    has_command "$cmd" ||
+        die "Error: unable to find command '$cmd'"
+
+    printf 'Launching: %s\n' "$cmd $*"
+
+    if [[ "$fork" ]]; then
+        fork_command "$cmd" "$@"
+    else
+        exec_command "$cmd" "$@"
+    fi
+}
+
+basename() {
+    printf '%s\n' "${1##*/}"
+}
+
+
+##### Concrete Implementation #####
+
+# list_pids_for_command -- list all pids that have a matching argv[0]
+#     A note on argv[0]: it's just a convention, not a kernel enforced value!
+#     Programs are free to set it as they want, and so of course they do, ugh.
+#     Some include the full path, others just the program name. Some
+#     confusingly include all arguments in argv[0] (I'm looking at you
+#     chromium-browser).
+list_pids_for_command() {
+    if has_command pgrep; then
+        list_pids_for_command_with_pgrep "$@"
+    else
+        list_pids_for_command_from_procfs "$@"
+    fi
+}
+
+list_pids_for_command_with_pgrep() {
+    pgrep -f "^(/.*/)?$1\b"
+}
+
+list_pids_for_command_from_procfs() {
+    for path in /proc/*/cmdline; do
+        read -rd '' cmd_argv0 <"$path"
+        local cmd=${cmd_argv0##*/} # substring removal in-lined for performance
+        if [[ "$cmd" == "$1"* ]]; then
+            basename "${path%%/cmdline}"
+        fi
+    done
+}
+
+list_windows() {
+    wmctrl -lp
+}
+
+focus_window_by_id() {
+    wmctrl -i -a "$1"
+}
+
+focus_window_by_class() {
+    wmctrl -x -a "$1"
+}
+
+has_command() {
+    hash "$1" 2>/dev/null
+}
+
+fork_command() {
+    ("$@" >/dev/null 2>&1) &
+}
+
+exec_command() {
+    exec "$@"
+}
+
+die() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+
+is_script_executed() {
+    [[ "${BASH_SOURCE[0]}" == "$0" ]]
+}
+
+if is_script_executed; then
+    main "$@"
+fi

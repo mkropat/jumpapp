@@ -1,0 +1,28 @@
+#!/bin/sh
+
+if [ "$#" -eq 0 ] || [ "$1" = '-h' ] || [ "$1" = '--help' ]; then
+    echo "Usage: $(basename "$0") SOMEFILE.desktop
+
+Given a desktop entry file (*.desktop), output a new desktop entry file that
+wraps the application's \`Exec\` in a call to jumpapp(1).
+
+EXAMPLES
+
+    jumpify-desktop-entry /usr/share/applications/chromium-browser.desktop \\
+        > ~/.local/share/applications/chromium-browser.desktop
+
+Or convert multiple in one go:
+
+    for entry in /usr/share/applications/{firefox,gnome-terminal}.desktop; do
+        target=~/\".local/share/applications/\$(basename \"\$entry\")\"
+        jumpify-desktop-entry \"\$entry\" >\"\$target\"
+    done"
+    exit 0
+fi
+
+# Desktop Entry reference: http://standards.freedesktop.org/desktop-entry-spec/latest/index.html
+
+exec perl -pe "do {
+    s/^(Name=.*)/\1 (Jump)/;
+    s#^Exec=(.*)#Exec=jumpapp \1#;
+} if /^\[Desktop Entry\]/ ... /^\[.*\]/" "$@"

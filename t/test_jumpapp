@@ -1,0 +1,168 @@
+#!/usr/bin/env bash
+
+setUp() {
+    list_pids_for_command_output=
+
+    die_called=
+    focus_window_by_class_called=
+    focus_window_by_id_called=
+    fork_command_called=
+    exec_command_called=
+
+    has_command_val=0
+}
+
+it_echoes_help_when_run_with_0_args() {
+    local output=$(main)
+    [[ "$output" == Usage:*  ]] || fail 'Output does not begin with "Usage:"'
+}
+
+it_echoes_help_when_run_with_dash_h() {
+    local output=$(main -h)
+    [[ "$output" == Usage:*  ]] || fail 'Output does not begin with "Usage:"'
+}
+
+it_throws_an_error_when_wmctrl_is_not_installed() {
+    has_command_val=1
+    main someapp
+    assertNotNull 'die() called' "$die_called"
+}
+
+it_calls_fork_command_when_process_is_not_running() {
+    focus_window_by_class_val=1
+    local output_file=$(mktemp)
+
+    main someapp >|"$output_file"
+
+    assertNotNull 'fork_command() called' "$fork_command_called"
+    [[ "$(<"$output_file")" == *someapp* ]] || fail 'Output does not include "someapp"'
+    assertEquals 'fork_command' someapp "$fork_command_cmd"
+
+    rm -f "$output_file"
+}
+
+it_calls_exec_command_when_called_with_dash_n_and_process_is_not_running() {
+    focus_window_by_class_val=1
+    exec_command_cmd=
+    local output_file=$(mktemp)
+
+    main -n someapp >|"$output_file"
+
+    assertNotNull 'exec_command() called' "$exec_command_called"
+    [[ "$(<"$output_file")" == *someapp* ]] || fail 'Output does not include "someapp"'
+    assertEquals 'exec_command' someapp "$exec_command_cmd"
+
+    rm -f "$output_file"
+}
+
+it_throws_an_error_when_process_is_running_but_no_windows_found() {
+    list_pids_for_command_output='123'
+    main someapp >/dev/null
+    assertNotNull 'die() called' "$die_called"
+}
+
+it_calls_fork_command_when_called_with_dash_f_and_process_is_running_but_no_windows_found() {
+    list_pids_for_command_output='123'
+    main -f someapp >/dev/null
+    assertNotNull 'fork_command() called' "$fork_command_called"
+}
+
+it_calls_focus_window_by_id_when_window_found() {
+    focus_window_by_id_val=0
+    list_pids_for_command_output='123'
+    list_windows_output='456 desktop 123 cmdline'
+
+    main someapp
+
+    assertNotNull 'focus_window_by_id() called' "$focus_window_by_id_called"
+    assertNull 'fork_command() not called' "$fork_command_called"
+}
+
+it_calls_focus_window_by_id_when_multiple_pids_exist() {
+    focus_window_by_id_val=0
+    list_pids_for_command_output='1 2 3 123'
+    list_windows_output='456 desktop 123 cmdline'
+
+    main someapp
+
+    assertNotNull 'focus_window_by_id() called' "$focus_window_by_id_called"
+    assertNull 'fork_command() not called' "$fork_command_called"
+}
+
+it_calls_list_pids_for_command_without_the_full_path() {
+    list_pids_for_command_cmd_file=$(mktemp)
+    main /usr/bin/someapp >/dev/null
+    assertEquals someapp "$(<$list_pids_for_command_cmd_file)"
+    rm -f "$list_pids_for_command_cmd_file"
+}
+
+it_calls_focus_window_by_class_when_window_not_found() {
+    focus_window_by_class_val=0
+
+    main someapp
+
+    assertNotNull 'focus_window_by_class() called' "$focus_window_by_class_called"
+    assertNull 'fork_command() not called' "$fork_command_called"
+}
+
+
+##### Test Doubles #####
+
+source jumpapp # load app now, so we can override it
+
+fork_command() {
+    fork_command_called=1
+    fork_command_cmd=$cmd
+}
+
+exec_command() {
+    exec_command_called=1
+    exec_command_cmd=$cmd
+}
+
+list_pids_for_command() {
+    if [[ "$list_pids_for_command_cmd_file" ]]; then
+        printf '%s\n' "$1" >|"$list_pids_for_command_cmd_file"
+    fi
+    printf '%s\n' "$list_pids_for_command_output"
+}
+
+list_windows() {
+    printf '%s\n' "$list_windows_output"
+}
+
+focus_window_by_id() {
+    focus_window_by_id_called=1
+    return "$focus_window_by_id_val"
+}
+
+focus_window_by_class() {
+    focus_window_by_class_called=1
+    return "$focus_window_by_class_val"
+}
+
+has_command() {
+    return "$has_command_val"
+}
+
+die() {
+    die_called=1
+    return 1
+}
+
+
+##### Test Harness #####
+
+suite() {
+    tests=( $(grep ^it_ "$0" | cut -d '(' -f 1) )
+    for name in "${tests[@]}"; do
+        suite_addTest $name
+    done
+}
+
+if hash shunit2 2>/dev/null; then
+    source shunit2
+else
+    echo 'Error: shunit2(1) could not be located. Please install it on your $PATH.' >&2
+    exit 1
+fi

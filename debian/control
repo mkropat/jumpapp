@@ -1,0 +1,19 @@
+# Generated with:
+# dh_make --single --indep --copyright mit  --file ../jumpapp_0.1.tar.bz2
+
+Source: jumpapp
+Section: x11
+Priority: optional
+Maintainer: Michael Kropat <mail@michael.kropat.name>
+Build-Depends: debhelper (>= 8.0.0), pandoc
+Standards-Version: 3.9.4
+Homepage: https://github.com/mkropat/jumpapp
+Vcs-Git: https://github.com/mkropat/jumpapp.git
+Vcs-Browser: https://github.com/mkropat/jumpapp
+
+Package: jumpapp
+Architecture: all
+Depends: wmctrl, ${misc:Depends}
+Description: jump to another application, unconditionally
+  Jumpapp focuses the window of the application you're interested in — assuming
+  it's already running — otherwise jumpapp launches the application for you.
