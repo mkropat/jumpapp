@@ -1,10 +1,12 @@
-# jumpapp — Jump to another application. Always.
+# jumpapp
+
+*Jump to another application. Always.*
 
 **jumpapp** focuses the window of the application you're interested in —
 assuming it's already running — otherwise **jumpapp** launches the application
 for you.
 
-# Synopsis
+## Synopsis
 
     Usage: jumpapp [OPTION]... COMMAND [ARG]...
 
@@ -17,9 +19,9 @@ for you.
       -i NAME -- find process using NAME as the command name (instead of COMMAND)
       -n      -- do not fork into background when launching COMMAND
 
-# Installation
+## Installation
 
-## Ubuntu, Mint, Debian and Friends
+### Ubuntu, Mint, Debian and Friends
 
     git clone https://github.com/mkropat/jumpapp.git
     cd jumpapp
@@ -27,20 +29,20 @@ for you.
     sudo dpkg -i jumpapp*all.deb
     sudo apt-get install -f	# if there were missing dependencies
 
-## Fedora and Friends
+### Fedora and Friends
 
     git clone https://github.com/mkropat/jumpapp.git
     cd jumpapp
     make rpm
     sudo yum localinstall jumpapp*.noarch.rpm
 
-## From Source
+### From Source
 
     git clone https://github.com/mkropat/jumpapp.git
     cd jumpapp
     sudo make install
 
-# A Wrapper Around wmctrl(1)
+## A Wrapper Around wmctrl(1)
 
 All the heavy lifting is done by Tomáš Stýblo's powerful
 [**wmctrl**](http://tomas.styblo.name/wmctrl/). You must have it installed to
@@ -50,7 +52,7 @@ use **jumpapp**.
 though that it'll work on [any window manager supported by
 **wmctrl**](http://tomas.styblo.name/wmctrl/#about).
 
-# jumpify-desktop-entry(1)
+## jumpify-desktop-entry(1)
 
 **jumpapp** ships with a helper utility:
 
@@ -71,9 +73,9 @@ though that it'll work on [any window manager supported by
             jumpify-desktop-entry "$entry" >"$target"
         done
 
-# Feature Ideas
+## Feature Ideas
 
-## Cycle Through Application Windows
+### Cycle Through Application Windows
 
 When invoked, if the specified application is already the focused window, try
 switching to the next window of the same application.

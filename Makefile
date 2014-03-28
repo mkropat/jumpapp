@@ -18,14 +18,13 @@ all: jumpapp.1
 
 jumpapp.1: README.man.md
 	@hash pandoc 2>/dev/null || { echo "ERROR: can't find pandoc. Have you installed it?" >&2; exit 1; }
-	perl -ne 'print if ! (/^# Installation/ ... /^# /) || /^# (?!Installation)/' "$<" | \
-		pandoc --from=markdown --standalone --output="$@"
+	pandoc --from=markdown --standalone --output="$@" "$<"
 
 README.man.md: README.md
 	echo '% JUMPAPP(1) jumpapp | $(VERSION)' >"$@"
 	echo '% $(AUTHOR)' >>"$@"
 	echo '% $(DATE)' >>"$@"
-	cat "$<" >>"$@"
+	perl -ne 's/^##/#/; print if ! (/^# Installation/ ... /^# /) || /^# (?!Installation)/' "$<" >>"$@"
 
 check: test
 test:
