@@ -5,7 +5,7 @@ Source: jumpapp
 Section: x11
 Priority: optional
 Maintainer: Michael Kropat <mail@michael.kropat.name>
-Build-Depends: debhelper (>= 8.0.0), pandoc
+Build-Depends: debhelper (>= 8.0.0), pandoc, shunit2
 Standards-Version: 3.9.4
 Homepage: https://github.com/mkropat/jumpapp
 Vcs-Git: https://github.com/mkropat/jumpapp.git

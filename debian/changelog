@@ -1,3 +1,9 @@
+jumpapp (0.1-1ubuntu1) saucy; urgency=medium
+
+  * Fix issue with PPA build
+
+ -- Michael Kropat <mail@michael.kropat.name>  Fri, 28 Mar 2014 13:04:57 -0400
+
 jumpapp (0.1-1) saucy; urgency=low
 
   * Initial release
