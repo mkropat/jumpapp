@@ -59,29 +59,65 @@ jumpapp() {
     fi
 
     local pids=( $(list_pids_for_command "$cmdid") )
-    local windowid="$(get_windowid_from_pids "${pids[@]}")"
+    local windowids=( $(list_matching_windowids "$classid" "${pids[@]}") )
 
-    if [[ "$windowid" ]]; then
-        focus_window_by_id "$windowid" || die "Error: unable to focus window for '$cmdid'"
-    elif focus_window_by_class "$classid"; then
-        : # if successful, we don't have to do anything
+    if (( ${#windowids[@]} )); then
+        activate_window "$(get_next_window "${windowids[@]}")" ||
+            die "Error: unable to focus window for '$cmdid'"
     else
-        (( ${#pids[@]} == 0 )) || [[ "$force" ]]  ||
+        if (( ${#pids[@]} )) && [[ -z "$force" ]]; then
             die "Error: found running process for '$cmdid', but found no window to jump to"
-        launch_command "$@"
+        else
+            launch_command "$@"
+        fi
     fi
 }
 
-get_windowid_from_pids() {
-    local windowid desktop pid line
-    while read -r windowid desktop pid line; do
+list_matching_windowids() {
+    list_windows | select_local_windows "$(get_hostname)" | select_windowid_by_class_or_pid "$@"
+}
+
+select_local_windows() {
+    while read -r windowid hostname rest; do
+        if [[ "$hostname" == "$1" ]]; then
+            printf '%s\n' "$windowid $rest"
+        fi
+    done
+}
+
+select_windowid_by_class_or_pid() {
+    local target_class=$1
+    shift
+
+    local windowid desktop class pid
+    while read -r windowid desktop class pid; do
+        if equals_case_insensitive "$class" "$target_class"; then
+            printf '%s\n' "$windowid"
+            continue
+        fi
         for target_pid in "$@"; do
-            if [[ "$pid" == "$target_pid" ]]; then
+            if (( pid == target_pid )); then
                 printf '%s\n' "$windowid"
-                return
+                continue
             fi
         done
-    done < <(list_windows)
+    done
+}
+
+get_next_window() {
+    local first=$1
+
+    local active=$(get_active_windowid)
+    while [[ "$1" ]] && (( $1 != active )); do
+        shift
+    done
+    shift # get windowid *after* active
+
+    if [[ "$1" ]]; then
+        printf '%s\n' "$1"
+    else
+        printf '%s\n' "$first"
+    fi
 }
 
 launch_command() {
@@ -99,6 +135,10 @@ launch_command() {
 
 basename() {
     printf '%s\n' "${1##*/}"
+}
+
+equals_case_insensitive() {
+    [[ "${1^^}" == "${2^^}" ]]
 }
 
 
@@ -133,15 +173,18 @@ list_pids_for_command_from_procfs() {
 }
 
 list_windows() {
-    wmctrl -lp
+    while read -r windowid desktop pid wm_class hostname title; do
+        printf '%s\n' "$windowid $hostname $desktop ${wm_class##*.} $pid"
+    done < <(wmctrl -lpx)
 }
 
-focus_window_by_id() {
+get_active_windowid() {
+    read name windowid < <(xprop -root ' $0\n' _NET_ACTIVE_WINDOW)
+    printf '%s\n' "$windowid"
+}
+
+activate_window() {
     wmctrl -i -a "$1"
-}
-
-focus_window_by_class() {
-    wmctrl -x -a "$1"
 }
 
 has_command() {
@@ -154,6 +197,10 @@ fork_command() {
 
 exec_command() {
     exec "$@"
+}
+
+get_hostname() {
+    hostname --short
 }
 
 die() {

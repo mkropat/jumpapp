@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
 
 setUp() {
+    active_windowid=0
     list_pids_for_command_output=
 
-    die_called=
-    focus_window_by_class_called=
-    focus_window_by_id_called=
-    fork_command_called=
-    exec_command_called=
-
     has_command_val=0
+
+    activate_window_called=
+    activate_window_arg=
+    die_called=
+    exec_command_called=
+    focus_window_by_class_called=
+    fork_command_called=
 }
 
 it_echoes_help_when_run_with_0_args() {
@@ -67,26 +69,76 @@ it_calls_fork_command_when_called_with_dash_f_and_process_is_running_but_no_wind
     assertNotNull 'fork_command() called' "$fork_command_called"
 }
 
-it_calls_focus_window_by_id_when_window_found() {
-    focus_window_by_id_val=0
+it_calls_activate_window_when_window_found_by_pid() {
     list_pids_for_command_output='123'
-    list_windows_output='456 desktop 123 cmdline'
+    list_windows_output='456 somehost -1 some-class 123'
 
     main someapp
 
-    assertNotNull 'focus_window_by_id() called' "$focus_window_by_id_called"
+    assertNotNull 'activate_window() called' "$activate_window_called"
+    assertEquals 456 "$activate_window_arg"
     assertNull 'fork_command() not called' "$fork_command_called"
 }
 
-it_calls_focus_window_by_id_when_multiple_pids_exist() {
-    focus_window_by_id_val=0
-    list_pids_for_command_output='1 2 3 123'
-    list_windows_output='456 desktop 123 cmdline'
+it_calls_activate_window_only_on_local_windows() {
+    list_pids_for_command_output='123'
+    list_windows_output='456 otherhost -1 some-class 123
+                         567 somehost -1 some-class 123'
 
     main someapp
 
-    assertNotNull 'focus_window_by_id() called' "$focus_window_by_id_called"
+    assertNotNull 'activate_window() called' "$activate_window_called"
+    assertEquals 567 "$activate_window_arg"
     assertNull 'fork_command() not called' "$fork_command_called"
+}
+
+it_calls_activate_window_when_multiple_pids_exist() {
+    list_pids_for_command_output='1 2 3 123'
+    list_windows_output='456 somehost -1 Some-class 123'
+
+    main someapp
+
+    assertNotNull 'activate_window() called' "$activate_window_called"
+    assertNull 'fork_command() not called' "$fork_command_called"
+}
+
+it_calls_activate_window_when_window_found_by_class() {
+    list_windows_output='456 somehost -1 someapp 123'
+
+    main someapp
+
+    assertNotNull 'activate_window() called' "$activate_window_called"
+    assertNull 'fork_command() not called' "$fork_command_called"
+}
+
+it_calls_activate_window_when_window_class_matches_with_different_case() {
+    list_windows_output='456 somehost -1 SomeAPP 123'
+
+    main someapp
+
+    assertNotNull 'activate_window() called' "$activate_window_called"
+    assertNull 'fork_command() not called' "$fork_command_called"
+}
+
+it_calls_activate_window_with_second_windowid_when_first_is_active() {
+    active_windowid=456
+    list_windows_output='456 somehost -1 someapp 123
+                         567 somehost -1 someapp 123'
+    main someapp
+
+    assertNotNull 'activate_window() called' "$activate_window_called"
+    assertEquals 567 "$activate_window_arg"
+}
+
+it_calls_activate_window_with_first_windowid_when_last_is_active() {
+    active_windowid=678
+    list_windows_output='456 somehost -1 someapp 123
+                         567 somehost -1 someapp 123
+                         678 somehost -1 someapp 123'
+    main someapp
+
+    assertNotNull 'activate_window() called' "$activate_window_called"
+    assertEquals 456 "$activate_window_arg"
 }
 
 it_calls_list_pids_for_command_without_the_full_path() {
@@ -96,19 +148,10 @@ it_calls_list_pids_for_command_without_the_full_path() {
     rm -f "$list_pids_for_command_cmd_file"
 }
 
-it_calls_focus_window_by_class_when_window_not_found() {
-    focus_window_by_class_val=0
-
-    main someapp
-
-    assertNotNull 'focus_window_by_class() called' "$focus_window_by_class_called"
-    assertNull 'fork_command() not called' "$fork_command_called"
-}
-
 
 ##### Test Doubles #####
 
-source jumpapp # load app now, so we can override it
+source ./jumpapp # load app now, so we can override it
 
 fork_command() {
     fork_command_called=1
@@ -131,18 +174,22 @@ list_windows() {
     printf '%s\n' "$list_windows_output"
 }
 
-focus_window_by_id() {
-    focus_window_by_id_called=1
-    return "$focus_window_by_id_val"
+get_active_windowid() {
+    printf '%s\n' "$active_windowid"
 }
 
-focus_window_by_class() {
-    focus_window_by_class_called=1
-    return "$focus_window_by_class_val"
+activate_window() {
+    activate_window_called=1
+    activate_window_arg=$1
+    return 0
 }
 
 has_command() {
     return "$has_command_val"
+}
+
+get_hostname() {
+    printf '%s\n' "somehost"
 }
 
 die() {
@@ -153,10 +200,13 @@ die() {
 
 ##### Test Harness #####
 
+# suite() -- find and register tests to be run
+#   Derived from Gary Bernhardt's screencast #68
+#   (https://www.destroyallsoftware.com/screencasts/catalog/test-driving-shell-scripts)
 suite() {
     tests=( $(grep ^it_ "$0" | cut -d '(' -f 1) )
     for name in "${tests[@]}"; do
-        suite_addTest $name
+        suite_addTest "$name"
     done
 }
 

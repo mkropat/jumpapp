@@ -6,6 +6,11 @@
 assuming it's already running — otherwise **jumpapp** launches the application
 for you.
 
+It the application is running and one of its windows is already focused,
+**jumpapp** will switch to the application's next window, if there is more than
+one. Running **jumpapp** multiple times for a given COMMAND will cycle you
+through all of the application's windows.
+
 ## Synopsis
 
     Usage: jumpapp [OPTION]... COMMAND [ARG]...
@@ -78,10 +83,3 @@ though that it'll work on [any window manager supported by
             target=~/".local/share/applications/$(basename "$entry")"
             jumpify-desktop-entry "$entry" >"$target"
         done
-
-## Feature Ideas
-
-### Cycle Through Application Windows
-
-When invoked, if the specified application is already the focused window, try
-switching to the next window of the same application.
