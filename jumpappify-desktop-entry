@@ -22,7 +22,8 @@ fi
 
 # Desktop Entry reference: http://standards.freedesktop.org/desktop-entry-spec/latest/index.html
 
-exec perl -pe "do {
+exec perl -pe 'do {
     s/^(Name=.*)/\1 (Jump)/;
-    s#^Exec=(.*)#Exec=jumpapp \1#;
-} if /^\[Desktop Entry\]/ ... /^\[.*\]/" "$@"
+    s/^Exec=(.*)/Exec=jumpapp \1/;
+    s/^Exec=jumpapp (?=.*%\w)(.*)/Exec=jumpapp -p \1/;
+} if /^\[Desktop Entry\]/ ... /^\[.*\]/' "$@"

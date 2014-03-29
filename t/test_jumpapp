@@ -148,6 +148,14 @@ it_calls_list_pids_for_command_without_the_full_path() {
     rm -f "$list_pids_for_command_cmd_file"
 }
 
+it_calls_fork_command_if_-p_option_passed_and_a_command_argument_is_passed() {
+    list_windows_output='456 somehost 123 -1 someapp' # even if the application is already running
+
+    main -p someapp somearg >/dev/null
+
+    assertNull 'activate_window() not called' "$activate_window_called"
+    assertNotNull 'fork_command() called' "$fork_command_called"
+}
 
 ##### Test Doubles #####
 

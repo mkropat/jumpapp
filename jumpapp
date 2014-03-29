@@ -8,21 +8,24 @@ Jump to (focus) the first open window for an application, if it's running.
 Otherwise, launch COMMAND (with opitonal ARGs) to start the application.
 
 Options:
+  -f -- force COMMAND to launch if process found but no windows found
+  -n -- do not fork into background when launching COMMAND
+  -p -- always launch COMMAND when ARGs passed
+        (see Argument Passthrough in man page)
   -c NAME -- find window using NAME as WM_CLASS (instead of COMMAND)
-  -f      -- force COMMAND to launch if process found but no windows found
-  -i NAME -- find process using NAME as the command name (instead of COMMAND)
-  -n      -- do not fork into background when launching COMMAND"
+  -i NAME -- find process using NAME as the command name (instead of COMMAND)"
 }
 
 main() {
-    local classid cmdid force fork=1
-    while getopts c:fhi:n opt; do
+    local classid cmdid force fork=1 passthrough=
+    while getopts c:fhi:np opt; do
         case "$opt" in
             c) classid="$OPTARG" ;;
             f) force=1 ;;
             h) show_usage; exit 0 ;;
             i) cmdid="$OPTARG" ;;
             n) fork='' ;;
+            p) passthrough=1; force=1 ;; # passthrough implies force
         esac
     done
 
@@ -39,7 +42,7 @@ main() {
 
     check_for_prerequisites &&
 
-    classid="$classid" cmd="$cmd" cmdid="$cmdid" force="$force" fork="$fork" \
+    classid="$classid" cmd="$cmd" cmdid="$cmdid" force="$force" fork="$fork" passthrough="$passthrough" \
         jumpapp "$@"
 }
 
@@ -61,7 +64,7 @@ jumpapp() {
     local pids=( $(list_pids_for_command "$cmdid") )
     local windowids=( $(list_matching_windowids "$classid" "${pids[@]}") )
 
-    if (( ${#windowids[@]} )); then
+    if (( ${#windowids[@]} )) && ! needs_passthrough "$@"; then
         activate_window "$(get_next_window "${windowids[@]}")" ||
             die "Error: unable to focus window for '$cmdid'"
     else
@@ -71,6 +74,10 @@ jumpapp() {
             launch_command "$@"
         fi
     fi
+}
+
+needs_passthrough() {
+    [[ "$passthrough" ]] && (( $# ))
 }
 
 list_matching_windowids() {

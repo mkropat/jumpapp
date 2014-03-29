@@ -53,6 +53,22 @@ through all of the application's windows.
     cd jumpapp
     make && sudo make install
 
+## Argument Passthrough (`-p` option)
+
+Many applications keep track of what windows they have open so that if you run
+the command again, it will interact with the existing application window
+instead of launching a new instance of the application.
+
+Take Firefox, for example. If you already have a Firefox window open and you
+run `firefox https://github.com/`, Firefox won't start a new instance. What it
+does is open a new tab in the existing window and browse to the URL you passed.
+
+[Especially in the case of Desktop Entry files](#jumpappify-desktop-entry1), we
+want to preserve this behavior. With `jumpapp -p COMMAND [ARGs]...`, when you
+include one or more ARGs, COMMAND is always executed in order to pass the ARGs
+to the running application. But if no ARGs are included, **jumpapp** will
+behave normally.
+
 ## A Wrapper Around wmctrl(1)
 
 All the heavy lifting is done by Tomáš Stýblo's powerful
