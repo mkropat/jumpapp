@@ -19,10 +19,12 @@ through all of the application's windows.
     Otherwise, launch COMMAND (with opitonal ARGs) to start the application.
 
     Options:
+      -f -- force COMMAND to launch if process found but no windows found
+      -n -- do not fork into background when launching COMMAND
+      -p -- always launch COMMAND when ARGs passed
+            (see Argument Passthrough in man page)
       -c NAME -- find window using NAME as WM_CLASS (instead of COMMAND)
-      -f      -- force COMMAND to launch if process found but no windows found
       -i NAME -- find process using NAME as the command name (instead of COMMAND)
-      -n      -- do not fork into background when launching COMMAND
 
 ## Installation
 
