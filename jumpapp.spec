@@ -35,5 +35,8 @@ mkdir -p %{buildroot}%{_unitdir}
 %{_mandir}/man1/*
 
 %changelog
+* Thu Mar 28 2014 Michael Kropat <mail@michael.kropat.name> - 0.2-1
+- Window Cycling feature
+
 * Thu Mar 27 2014 Michael Kropat <mail@michael.kropat.name> - 0.1-1
 - Initial version
