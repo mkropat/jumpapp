@@ -63,23 +63,23 @@ use **jumpapp**.
 though that it'll work on [any window manager supported by
 **wmctrl**](http://tomas.styblo.name/wmctrl/#about).
 
-## jumpify-desktop-entry(1)
+## jumpappify-desktop-entry(1)
 
 **jumpapp** ships with a helper utility:
 
-    Usage: jumpify-desktop-entry SOMEFILE.desktop
+    Usage: jumpappify-desktop-entry SOMEFILE.desktop
 
     Given a desktop entry file (*.desktop), output a new desktop entry file that
     wraps the application's `Exec` in a call to jumpapp(1).
 
     EXAMPLES
 
-        jumpify-desktop-entry /usr/share/applications/chromium-browser.desktop \
+        jumpappify-desktop-entry /usr/share/applications/chromium-browser.desktop \
             > ~/.local/share/applications/chromium-browser.desktop
 
     Or convert multiple in one go:
 
         for entry in /usr/share/applications/{firefox,gnome-terminal}.desktop; do
             target=~/".local/share/applications/$(basename "$entry")"
-            jumpify-desktop-entry "$entry" >"$target"
+            jumpappify-desktop-entry "$entry" >"$target"
         done

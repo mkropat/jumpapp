@@ -10,7 +10,7 @@ PACKAGE_ORIG_FILE	= jumpapp_$(VERSION).orig.tar.bz2
 
 AUTHOR	= Michael Kropat <mail@michael.kropat.name>
 DATE	= Mar 27, 2014
-FILES	= t README.md LICENSE.txt Makefile jumpapp jumpify-desktop-entry
+FILES	= t README.md LICENSE.txt Makefile jumpapp jumpappify-desktop-entry
 
 .PHONY: all check test install uninstall
 
@@ -28,19 +28,19 @@ README.man.md: README.md
 
 check: test
 test:
-	-shellcheck --exclude=SC2034 jumpapp jumpify-desktop-entry
-	-checkbashisms jumpify-desktop-entry
+	-shellcheck --exclude=SC2034 jumpapp jumpappify-desktop-entry
+	-checkbashisms jumpappify-desktop-entry
 	t/test_jumpapp
 
 install:
 	mkdir -p "$(BIN)"
-	cp jumpapp jumpify-desktop-entry "$(BIN)"
+	cp jumpapp jumpappify-desktop-entry "$(BIN)"
 
 	mkdir -p "$(MAN)/man1"
 	cp jumpapp.1 "$(MAN)/man1/"
 
 uninstall:
-	-rm -f "$(BIN)/jumpapp" "$(BIN)/jumpify-desktop-entry"
+	-rm -f "$(BIN)/jumpapp" "$(BIN)/jumpappify-desktop-entry"
 	-rm -f "$(MAN)/man1/jumpapp.1"
 
 clean:
