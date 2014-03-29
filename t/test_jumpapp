@@ -71,7 +71,7 @@ it_calls_fork_command_when_called_with_dash_f_and_process_is_running_but_no_wind
 
 it_calls_activate_window_when_window_found_by_pid() {
     list_pids_for_command_output='123'
-    list_windows_output='456 somehost -1 some-class 123'
+    list_windows_output='456 somehost 123 -1 some-class'
 
     main someapp
 
@@ -82,8 +82,8 @@ it_calls_activate_window_when_window_found_by_pid() {
 
 it_calls_activate_window_only_on_local_windows() {
     list_pids_for_command_output='123'
-    list_windows_output='456 otherhost -1 some-class 123
-                         567 somehost -1 some-class 123'
+    list_windows_output='456 otherhost 123 -1 some-class
+                         567 somehost 123 -1 some-class'
 
     main someapp
 
@@ -94,7 +94,7 @@ it_calls_activate_window_only_on_local_windows() {
 
 it_calls_activate_window_when_multiple_pids_exist() {
     list_pids_for_command_output='1 2 3 123'
-    list_windows_output='456 somehost -1 Some-class 123'
+    list_windows_output='456 somehost 123 -1 Some-class'
 
     main someapp
 
@@ -103,7 +103,7 @@ it_calls_activate_window_when_multiple_pids_exist() {
 }
 
 it_calls_activate_window_when_window_found_by_class() {
-    list_windows_output='456 somehost -1 someapp 123'
+    list_windows_output='456 somehost 123 -1 someapp'
 
     main someapp
 
@@ -112,7 +112,7 @@ it_calls_activate_window_when_window_found_by_class() {
 }
 
 it_calls_activate_window_when_window_class_matches_with_different_case() {
-    list_windows_output='456 somehost -1 SomeAPP 123'
+    list_windows_output='456 somehost 123 -1 SomeAPP'
 
     main someapp
 
@@ -122,8 +122,8 @@ it_calls_activate_window_when_window_class_matches_with_different_case() {
 
 it_calls_activate_window_with_second_windowid_when_first_is_active() {
     active_windowid=456
-    list_windows_output='456 somehost -1 someapp 123
-                         567 somehost -1 someapp 123'
+    list_windows_output='456 somehost 123 -1 someapp
+                         567 somehost 123 -1 someapp'
     main someapp
 
     assertNotNull 'activate_window() called' "$activate_window_called"
@@ -132,9 +132,9 @@ it_calls_activate_window_with_second_windowid_when_first_is_active() {
 
 it_calls_activate_window_with_first_windowid_when_last_is_active() {
     active_windowid=678
-    list_windows_output='456 somehost -1 someapp 123
-                         567 somehost -1 someapp 123
-                         678 somehost -1 someapp 123'
+    list_windows_output='456 somehost 123 -1 someapp
+                         567 somehost 123 -1 someapp
+                         678 somehost 123 -1 someapp'
     main someapp
 
     assertNotNull 'activate_window() called' "$activate_window_called"

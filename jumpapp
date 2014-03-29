@@ -90,7 +90,7 @@ select_windowid_by_class_or_pid() {
     shift
 
     local windowid desktop class pid
-    while read -r windowid desktop class pid; do
+    while read -r windowid pid desktop class; do
         if equals_case_insensitive "$class" "$target_class"; then
             printf '%s\n' "$windowid"
             continue
@@ -98,7 +98,7 @@ select_windowid_by_class_or_pid() {
         for target_pid in "$@"; do
             if (( pid == target_pid )); then
                 printf '%s\n' "$windowid"
-                continue
+                continue 2
             fi
         done
     done
@@ -121,8 +121,7 @@ get_next_window() {
 }
 
 launch_command() {
-    has_command "$cmd" ||
-        die "Error: unable to find command '$cmd'"
+    has_command "$cmd" || die "Error: unable to find command '$cmd'"
 
     printf 'Launching: %s\n' "$cmd $*"
 
@@ -142,7 +141,7 @@ equals_case_insensitive() {
 }
 
 
-##### Concrete Implementation #####
+##### External Interfaces #####
 
 # list_pids_for_command -- list all pids that have a matching argv[0]
 #     A note on argv[0]: it's just a convention, not a kernel enforced value!
@@ -167,14 +166,17 @@ list_pids_for_command_from_procfs() {
         read -rd '' cmd_argv0 <"$path"
         local cmd=${cmd_argv0##*/} # substring removal in-lined for performance
         if [[ "$cmd" == "$1"* ]]; then
-            basename "${path%%/cmdline}"
+            basename "${path%/cmdline}"
         fi
     done
 }
 
+# list_windows() -- list windowids with associated information
+#   Column spec: windowid hostname pid desktop class
+#   Where 'class' is the second WM_CLASS string (http://tronche.com/gui/x/icccm/sec-4.html#WM_CLASS)
 list_windows() {
     while read -r windowid desktop pid wm_class hostname title; do
-        printf '%s\n' "$windowid $hostname $desktop ${wm_class##*.} $pid"
+        printf '%s\n' "$windowid $hostname $pid $desktop ${wm_class##*.}"
     done < <(wmctrl -lpx)
 }
 
@@ -200,7 +202,7 @@ exec_command() {
 }
 
 get_hostname() {
-    hostname --short
+    hostname -s
 }
 
 die() {
