@@ -81,7 +81,10 @@ needs_passthrough() {
 }
 
 list_matching_windowids() {
-    list_windows | select_local_windows "$(get_hostname)" | select_windowid_by_class_or_pid "$@"
+    list_windows |
+        select_local_windows "$(get_hostname)" |
+        select_windowid_by_class_or_pid "$@" |
+        select_normal_windows   # spawns `xprop` process per-id, so do it last
 }
 
 select_local_windows() {
@@ -108,6 +111,17 @@ select_windowid_by_class_or_pid() {
                 continue 2
             fi
         done
+    done
+}
+
+select_normal_windows() {
+    local windowid
+    while read -r windowid; do
+        case "$(get_window_type "$windowid")" in
+            '' | _NET_WM_WINDOW_TYPE_NORMAL | _NET_WM_WINDOW_TYPE_DIALOG)
+                printf '%s\n' "$windowid"
+                ;;
+        esac
     done
 }
 
@@ -188,8 +202,17 @@ list_windows() {
 }
 
 get_active_windowid() {
+    local windowid
     read name windowid < <(xprop -root ' $0\n' _NET_ACTIVE_WINDOW)
     printf '%s\n' "$windowid"
+}
+
+get_window_type() {
+    local window_type
+    read -r name window_type < <(xprop -id "$1" ' $0\n' _NET_WM_WINDOW_TYPE)
+    if [[ "$window_type" != 'not found.' ]]; then
+        printf '%s\n' "$window_type"
+    fi
 }
 
 activate_window() {

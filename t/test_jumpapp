@@ -2,6 +2,7 @@
 
 setUp() {
     active_windowid=0
+    get_window_type_output=_NET_WM_WINDOW_TYPE_NORMAL
     list_pids_for_command_output=
 
     has_command_val=0
@@ -141,6 +142,23 @@ it_calls_activate_window_with_first_windowid_when_last_is_active() {
     assertEquals 456 "$activate_window_arg"
 }
 
+it_throws_an_error_when_process_is_running_but_window_type_is_not_normal() {
+    list_pids_for_command_output='123'
+    list_windows_output='456 somehost 123 -1 someapp'
+    get_window_type_output=_NET_WM_WINDOW_TYPE_DESKTOP
+
+    main someapp >/dev/null
+
+    assertNotNull 'die() called' "$die_called"
+}
+
+it_calls_activate_window_with_second_windowid_when_first_is_not_normal() {
+    # I haven't figured out how to test this yet, since we need to output
+    # different values from `get_window_type` and `get_window_type` is being
+    # called in a subshell.
+    :
+}
+
 it_calls_list_pids_for_command_without_the_full_path() {
     list_pids_for_command_cmd_file=$(mktemp)
     main /usr/bin/someapp >/dev/null
@@ -156,6 +174,7 @@ it_calls_fork_command_if_-p_option_passed_and_a_command_argument_is_passed() {
     assertNull 'activate_window() not called' "$activate_window_called"
     assertNotNull 'fork_command() called' "$fork_command_called"
 }
+
 
 ##### Test Doubles #####
 
@@ -184,6 +203,10 @@ list_windows() {
 
 get_active_windowid() {
     printf '%s\n' "$active_windowid"
+}
+
+get_window_type() {
+    printf '%s\n' "$get_window_type_output"
 }
 
 activate_window() {
