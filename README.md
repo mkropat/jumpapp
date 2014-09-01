@@ -21,6 +21,7 @@ through all of the application's windows.
     Options:
       -f -- force COMMAND to launch if process found but no windows found
       -n -- do not fork into background when launching COMMAND
+      -r -- cycle through windows in reverse order
       -p -- always launch COMMAND when ARGs passed
             (see Argument Passthrough in man page)
       -c NAME -- find window using NAME as WM_CLASS (instead of COMMAND)

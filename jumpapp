@@ -10,6 +10,7 @@ Otherwise, launch COMMAND (with opitonal ARGs) to start the application.
 Options:
   -f -- force COMMAND to launch if process found but no windows found
   -n -- do not fork into background when launching COMMAND
+  -r -- cycle through windows in reverse order
   -p -- always launch COMMAND when ARGs passed
         (see Argument Passthrough in man page)
   -c NAME -- find window using NAME as WM_CLASS (instead of COMMAND)
@@ -17,8 +18,8 @@ Options:
 }
 
 main() {
-    local classid cmdid force fork=1 passthrough=
-    while getopts c:fhi:np opt; do
+    local classid cmdid force fork=1 passthrough='' in_reverse=''
+    while getopts c:fhi:npr opt; do
         case "$opt" in
             c) classid="$OPTARG" ;;
             f) force=1 ;;
@@ -26,6 +27,7 @@ main() {
             i) cmdid="$OPTARG" ;;
             n) fork='' ;;
             p) passthrough=1; force=1 ;; # passthrough implies force
+            r) in_reverse=1 ;;
         esac
     done
 
@@ -41,9 +43,7 @@ main() {
     shift
 
     check_for_prerequisites &&
-
-    classid="$classid" cmd="$cmd" cmdid="$cmdid" force="$force" fork="$fork" passthrough="$passthrough" \
-        jumpapp "$@"
+    jumpapp "$@"
 }
 
 check_for_prerequisites() {
@@ -65,7 +65,7 @@ jumpapp() {
     local windowids=( $(list_matching_windowids "$classid" "${pids[@]}") )
 
     if (( ${#windowids[@]} )) && ! needs_passthrough "$@"; then
-        activate_window "$(get_next_window "${windowids[@]}")" ||
+        activate_window "$(get_subsequent_window "${windowids[@]}")" ||
             die "Error: unable to focus window for '$cmdid'"
     else
         if (( ${#pids[@]} )) && [[ -z "$force" ]]; then
@@ -123,6 +123,30 @@ select_normal_windows() {
                 ;;
         esac
     done
+}
+
+get_subsequent_window() {
+    if [[ -n "$in_reverse" ]]; then
+        get_prev_window "$@"
+    else
+        get_next_window "$@"
+    fi
+}
+
+get_prev_window() {
+    local active=$(get_active_windowid) prev
+
+    if (( $1 == active )); then
+        shift $(( $# - 1 ))
+        printf '%s\n' "$1"
+    else
+        while [[ "$1" ]] && (( $1 != active )); do
+            prev=$1
+            shift
+        done
+
+        printf '%s\n' "$prev"
+    fi
 }
 
 get_next_window() {

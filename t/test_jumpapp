@@ -142,6 +142,28 @@ it_calls_activate_window_with_first_windowid_when_last_is_active() {
     assertEquals 456 "$activate_window_arg"
 }
 
+it_calls_activate_window_with_last_windowid_when_first_is_active_and_r_flag_is_passed() {
+    active_windowid=456
+    list_windows_output='456 somehost 123 -1 someapp
+                         567 somehost 123 -1 someapp
+                         678 somehost 123 -1 someapp'
+    main -r someapp
+
+    assertNotNull 'activate_window() called' "$activate_window_called"
+    assertEquals 678 "$activate_window_arg"
+}
+
+it_calls_activate_window_with_first_windowid_when_second_is_active_and_r_flag_is_passed() {
+    active_windowid=567
+    list_windows_output='456 somehost 123 -1 someapp
+                         567 somehost 123 -1 someapp
+                         678 somehost 123 -1 someapp'
+    main -r someapp
+
+    assertNotNull 'activate_window() called' "$activate_window_called"
+    assertEquals 456 "$activate_window_arg"
+}
+
 it_throws_an_error_when_process_is_running_but_window_type_is_not_normal() {
     list_pids_for_command_output='123'
     list_windows_output='456 somehost 123 -1 someapp'
