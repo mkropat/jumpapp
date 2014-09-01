@@ -11,6 +11,10 @@ It the application is running and one of its windows is already focused,
 one. Running **jumpapp** multiple times for a given COMMAND will cycle you
 through all of the application's windows.
 
+Once [installed](#installation), the simplest way to get started with **jumpapp** is to configure your Window Manager to call it when pre-defined shortcuts are pressed:
+
+![Settings Example](http://i.imgur.com/dAj8NDZ.png "On Ubuntu it's under All Settings → Keyboard → Shortcuts")
+
 ## Synopsis
 
     Usage: jumpapp [OPTION]... COMMAND [ARG]...
