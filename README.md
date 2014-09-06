@@ -2,18 +2,13 @@
 
 *Jump to another application. Always.*
 
-**jumpapp** focuses the window of the application you're interested in —
-assuming it's already running — otherwise **jumpapp** launches the application
-for you.
+With **jumpapp**, you can bind a key to switch directly to the window of a particular application.  If there's more than one window, **jumpapp** lets you cycle through them all.  If the application isn't running yet, **jumpapp** is smart enough to start the application for you.
 
-It the application is running and one of its windows is already focused,
-**jumpapp** will switch to the application's next window, if there is more than
-one. Running **jumpapp** multiple times for a given COMMAND will cycle you
-through all of the application's windows.
-
-Once [installed](#installation), the simplest way to get started with **jumpapp** is to configure your Window Manager to call it when pre-defined shortcuts are pressed:
+In short, it's probably the fastest way for a keyboard-junkie to switch between applications in a modern desktop environment.  All you have to do is configure the shortcuts you want to use:
 
 ![Settings Example](http://i.imgur.com/dAj8NDZ.png "On Ubuntu it's under All Settings → Keyboard → Shortcuts")
+
+If you permit me to wax philosophical, **jumpapp** makes application switching [modeless](https://en.wikipedia.org/wiki/Mode_%28computer_interface%29) — is my application running?  How many times do I have to <kbd>Alt+Tab</kbd> back?  Or do I have to go start it?  All these questions get collapsed into a single key-press.
 
 ## Synopsis
 
