@@ -4,7 +4,7 @@
 
 With **jumpapp**, you can bind a key to switch directly to the window of a particular application.  If there's more than one window, **jumpapp** lets you cycle through them all.  If the application isn't running yet, **jumpapp** is smart enough to start the application for you.
 
-In short, it's probably the fastest way for a keyboard-junkie to switch between applications in a modern desktop environment.  All you have to do is configure the shortcuts you want to use:
+In short, it's probably the fastest way for a keyboard-junkie to switch between applications in a modern desktop environment.  All you have to do is configure the key bindings you want to use:
 
 ![Settings Example](http://i.imgur.com/dAj8NDZ.png "On Ubuntu it's under All Settings → Keyboard → Shortcuts")
 
@@ -80,6 +80,30 @@ use **jumpapp**.
 **jumpapp** was built for the GNOME desktop environment. There's a good chance
 though that it'll work on [any window manager supported by
 **wmctrl**](http://tomas.styblo.name/wmctrl/#about).
+
+## XBindKeys
+
+If your desktop environment doesn't offer a way to bind keys to commands — or if it's too limited — take a look at [XBindKeys](http://www.nongnu.org/xbindkeys/xbindkeys.html).
+
+Example `.xbindkeysrc`:
+
+    "jumpapp chromium"
+      control + alt + c
+    
+    "jumpapp -r chromium"
+      shift + control + alt + c
+    
+    "jumpapp firefox"
+      control + alt + f
+    
+    "jumpapp -r firefox"
+      shift + control + alt + f
+    
+    "jumpapp gnome-terminal"
+      control + alt + t
+    
+    "jumpapp -r gnome-terminal"
+      shift + control + alt + t
 
 ## jumpappify-desktop-entry(1)
 
