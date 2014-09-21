@@ -19,6 +19,8 @@ Options:
 
 main() {
     local classid cmdid force fork=1 passthrough='' in_reverse=''
+
+    local OPTIND
     while getopts c:fhi:npr opt; do
         case "$opt" in
             c) classid="$OPTARG" ;;
@@ -30,9 +32,7 @@ main() {
             r) in_reverse=1 ;;
         esac
     done
-
     shift $(( OPTIND - 1 ))
-    OPTIND=1
 
     if (( ! $# )); then
         show_usage
@@ -88,6 +88,7 @@ list_matching_windowids() {
 }
 
 select_local_windows() {
+    local windowid hostname rest
     while read -r windowid hostname rest; do
         if [[ "$hostname" == "$1" ]]; then
             printf '%s\n' "$windowid $rest"
@@ -99,7 +100,7 @@ select_windowid_by_class_or_pid() {
     local target_class=$1
     shift
 
-    local windowid desktop class pid
+    local windowid pid desktop class
     while read -r windowid pid desktop class; do
         if equals_case_insensitive "$class" "$target_class"; then
             printf '%s\n' "$windowid"
@@ -207,6 +208,7 @@ list_pids_for_command_with_pgrep() {
 }
 
 list_pids_for_command_from_procfs() {
+    local cmd_argv0
     for path in /proc/*/cmdline; do
         read -rd '' cmd_argv0 <"$path"
         local cmd=${cmd_argv0##*/} # substring removal in-lined for performance
@@ -220,19 +222,20 @@ list_pids_for_command_from_procfs() {
 #   Column spec: windowid hostname pid desktop class
 #   Where 'class' is the second WM_CLASS string (http://tronche.com/gui/x/icccm/sec-4.html#WM_CLASS)
 list_windows() {
+    local windowid desktop pid wm_class hostname title
     while read -r windowid desktop pid wm_class hostname title; do
         printf '%s\n' "$windowid $hostname $pid $desktop ${wm_class##*.}"
     done < <(wmctrl -lpx)
 }
 
 get_active_windowid() {
-    local windowid
+    local name windowid
     read name windowid < <(xprop -root ' $0\n' _NET_ACTIVE_WINDOW)
     printf '%s\n' "$windowid"
 }
 
 get_window_type() {
-    local window_type
+    local name window_type
     read -r name window_type < <(xprop -id "$1" ' $0\n' _NET_WM_WINDOW_TYPE)
     if [[ "$window_type" != 'not found.' ]]; then
         printf '%s\n' "$window_type"
@@ -267,6 +270,7 @@ die() {
 is_script_executed() {
     [[ "${BASH_SOURCE[0]}" == "$0" ]]
 }
+
 
 if is_script_executed; then
     main "$@"
