@@ -1,14 +1,17 @@
 # jumpapp
 
-*Jump to another application. Always.*
+*A faster way to launch applications and switch between them*
 
-With **jumpapp**, you can bind a key to switch directly to the window of a particular application.  If there's more than one window, **jumpapp** lets you cycle through them all.  If the application isn't running yet, **jumpapp** is smart enough to start the application for you.
+The idea is simple — bind a key for any given application that will:
 
-In short, it's probably the fastest way for a keyboard-junkie to switch between applications in a modern desktop environment.  All you have to do is configure the key bindings you want to use:
+- launch the application, if it's not already running, or
+- focus the application's window, if it is running
+
+Pressing the key again will cycle to the application's next window, if there's more than one.
+
+In short, **jumpapp** is probably the fastest way for a keyboard-junkie to switch between applications in a modern desktop environment.  Once [installed](#Installation), all you have to do is configure the key bindings you want to use:
 
 ![Settings Example](http://i.imgur.com/dAj8NDZ.png "On Ubuntu it's under All Settings → Keyboard → Shortcuts")
-
-If you permit me to wax philosophical, **jumpapp** makes application switching [modeless](https://en.wikipedia.org/wiki/Mode_%28computer_interface%29) — is my application running?  How many times do I have to <kbd>Alt+Tab</kbd> back?  Or do I have to go start it?  All these questions get collapsed into a single key-press.
 
 ## Synopsis
 
@@ -89,19 +92,19 @@ Example `.xbindkeysrc`:
 
     "jumpapp chromium"
       control + alt + c
-    
+
     "jumpapp -r chromium"
       shift + control + alt + c
-    
+
     "jumpapp firefox"
       control + alt + f
-    
+
     "jumpapp -r firefox"
       shift + control + alt + f
-    
+
     "jumpapp gnome-terminal"
       control + alt + t
-    
+
     "jumpapp -r gnome-terminal"
       shift + control + alt + t
 
@@ -125,3 +128,4 @@ Example `.xbindkeysrc`:
             target=~/".local/share/applications/$(basename "$entry")"
             jumpappify-desktop-entry "$entry" >"$target"
         done
+
