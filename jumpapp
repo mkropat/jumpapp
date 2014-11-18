@@ -259,7 +259,7 @@ exec_command() {
 }
 
 get_hostname() {
-    hostname -s
+    hostname
 }
 
 die() {
