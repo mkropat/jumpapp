@@ -1,3 +1,9 @@
+jumpapp (0.4-1) trusty; urgency=low
+
+  * Fix logic for matching hostname
+
+ -- Michael Kropat <mail@michael.kropat.name>  Mon, 17 Nov 2014 23:22:13 -0500
+
 jumpapp (0.3-1) trusty; urgency=low
 
   * Add `-r` option
