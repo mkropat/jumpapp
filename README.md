@@ -39,6 +39,7 @@ In short, **jumpapp** is probably the fastest way for a keyboard-junkie to switc
 
 ### Debian and Friends
 
+    sudo apt-get install build-essential debhelper pandoc shunit2
     git clone https://github.com/mkropat/jumpapp.git
     cd jumpapp
     make deb
