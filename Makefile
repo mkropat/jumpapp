@@ -68,7 +68,7 @@ jumpapp_$(VERSION)-1_all.deb: $(PACKAGE_FILE) debian/copyright
 	@hash dpkg-buildpackage 2>/dev/null || { \
 		echo "ERROR: can't find dpkg-buildpackage. Did you run \`sudo apt-get install debhelper devscripts\`?" >&2; exit 1; \
 	}
-	dpkg-buildpackage -b -tc
+	dpkg-buildpackage -b -tc -uc -us
 	mv "../$@" .
 	mv ../jumpapp_$(VERSION)-1_*.changes .
 
