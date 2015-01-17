@@ -3,13 +3,13 @@ PREFIX = /usr/local
 BIN	= $(DESTDIR)/$(PREFIX)/bin
 MAN	= $(DESTDIR)/$(PREFIX)/share/man
 
-VERSION			= 0.4
+VERSION			= 0.5
 PACKAGE_DIR		= jumpapp-$(VERSION)
 PACKAGE_FILE		= jumpapp_$(VERSION).tar.bz2
 PACKAGE_ORIG_FILE	= jumpapp_$(VERSION).orig.tar.bz2
 
 AUTHOR	= Michael Kropat <mail@michael.kropat.name>
-DATE	= Mar 27, 2014
+DATE	= Jan 17, 2015
 FILES	= t README.md LICENSE.txt Makefile jumpapp jumpappify-desktop-entry
 
 .PHONY: all check test install uninstall
