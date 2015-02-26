@@ -206,6 +206,32 @@ it_calls_fork_command_if_-p_option_passed_and_a_command_argument_is_passed() {
     assertNotNull 'fork_command() called' "$fork_command_called"
 }
 
+it_prints_count_0_when_called_with_-L() {
+    list_windows_output=''
+
+    local output=$(main -L someapp)
+    [[ "$output" == "Matched Windows [0]" ]] || fail 'Output is not "Matched Windows [0]"'
+}
+
+it_prints_count_2_when_called_with_-L_and_2_match() {
+    list_windows_output='456 somehost 123 -1 someapp SomeApp Window #1
+                         567 somehost 234 -1 anotherapp AnotherApp Window
+                         678 somehost 123 -1 someapp SomeApp Window #2'
+
+    local output=$(main -L someapp)
+    [[ "$output" == "Matched Windows [2]"* ]] || fail 'Output does not start with "Matched Windows [2]"'
+}
+
+it_prints_matching_windows_when_called_with_-L() {
+    list_windows_output='456 somehost 123 -1 someapp SomeApp Window #1
+                         567 somehost 234 -1 anotherapp AnotherApp Window
+                         678 somehost 123 -1 someapp SomeApp Window #2'
+
+    local output=$(main -L someapp)
+    [[ "$output" == *"456 somehost 123 -1 someapp: SomeApp Window #1"* ]] || fail 'Output does not list Window #1'
+    [[ "$output" != *"anotherapp"* ]] || fail 'Output lists anotherapp'
+    [[ "$output" == *"678 somehost 123 -1 someapp: SomeApp Window #2"* ]] || fail 'Output does not list Window #2'
+}
 
 ##### Test Doubles #####
 

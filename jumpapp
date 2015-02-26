@@ -9,6 +9,7 @@ Otherwise, launch COMMAND (with opitonal ARGs) to start the application.
 
 Options:
   -f -- force COMMAND to launch if process found but no windows found
+  -L -- list matching windows for COMMAND and quit
   -n -- do not fork into background when launching COMMAND
   -r -- cycle through windows in reverse order
   -p -- always launch COMMAND when ARGs passed
@@ -18,15 +19,16 @@ Options:
 }
 
 main() {
-    local classid cmdid force fork=1 passthrough='' in_reverse=''
+    local classid cmdid force fork=1 list passthrough='' in_reverse=''
 
     local OPTIND
-    while getopts c:fhi:npr opt; do
+    while getopts c:fhi:Lnpr opt; do
         case "$opt" in
             c) classid="$OPTARG" ;;
             f) force=1 ;;
             h) show_usage; exit 0 ;;
             i) cmdid="$OPTARG" ;;
+            L) list=1 ;;
             n) fork='' ;;
             p) passthrough=1; force=1 ;; # passthrough implies force
             r) in_reverse=1 ;;
@@ -62,9 +64,14 @@ jumpapp() {
     fi
 
     local pids=( $(list_pids_for_command "$cmdid") )
-    local windowids=( $(list_matching_windows "$classid" "${pids[@]}") )
+    local windowids=(
+      $(list_matching_windows "$classid" "${pids[@]}" | select_windowid)
+    )
 
-    if (( ${#windowids[@]} )) && ! needs_passthrough "$@"; then
+    if [[ -n "$list" ]]; then
+      printf 'Matched Windows [%d]\n' ${#windowids[@]}
+      list_matching_windows "$classid" "${pids[@]}" | print_windows
+    elif (( ${#windowids[@]} )) && ! needs_passthrough "$@"; then
         activate_window "$(get_subsequent_window "${windowids[@]}")" ||
             die "Error: unable to focus window for '$cmdid'"
     else
@@ -83,8 +90,7 @@ needs_passthrough() {
 list_matching_windows() {
     list_windows |
         where_class_or_pid_matches "$@" |
-        where_normal_window | # spawns `xprop` process per-id, so do it last
-        select_windowid
+        where_normal_window   # spawns `xprop` process per-id, so do it last
 }
 
 where_class_or_pid_matches() {
@@ -125,6 +131,13 @@ select_windowid() {
     local windowid rest
     while read -r windowid rest; do
         printf '%s\n' "$windowid"
+    done
+}
+
+print_windows() {
+    local windowid hostname pid desktop class title
+    while read -r windowid hostname pid desktop class title; do
+        printf '%s: %s\n' "$windowid $hostname $pid $desktop $class" "$title"
     done
 }
 
