@@ -92,6 +92,9 @@ deb-clean:
 	-rm -rf $(PACKAGE_DIR)
 	-rm -f debian/copyright
 
+deb-deploy: jumpapp_$(VERSION)-1_source.changes
+	dput ppa:mkropat/ppa "$<"
+
 
 ### make rpm ###
 
