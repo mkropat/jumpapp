@@ -62,7 +62,7 @@ jumpapp() {
     fi
 
     local pids=( $(list_pids_for_command "$cmdid") )
-    local windowids=( $(list_matching_windowids "$classid" "${pids[@]}") )
+    local windowids=( $(list_matching_windows "$classid" "${pids[@]}") )
 
     if (( ${#windowids[@]} )) && ! needs_passthrough "$@"; then
         activate_window "$(get_subsequent_window "${windowids[@]}")" ||
@@ -80,28 +80,29 @@ needs_passthrough() {
     [[ "$passthrough" ]] && (( $# ))
 }
 
-list_matching_windowids() {
+list_matching_windows() {
     list_windows |
-        select_windowid_by_class_or_pid "$@" |
-        select_normal_windows   # spawns `xprop` process per-id, so do it last
+        where_class_or_pid_matches "$@" |
+        where_normal_window | # spawns `xprop` process per-id, so do it last
+        select_windowid
 }
 
-select_windowid_by_class_or_pid() {
+where_class_or_pid_matches() {
     local target_class=$1
     shift
 
     local local_hostname=$(get_hostname)
 
-    local windowid hostname pid desktop class
-    while read -r windowid hostname pid desktop class; do
+    local windowid hostname pid desktop class title
+    while read -r windowid hostname pid desktop class title; do
         if equals_case_insensitive "$class" "$target_class"; then
-            printf '%s\n' "$windowid"
+            printf '%s\n' "$windowid $hostname $pid $desktop $class $title"
             continue
         fi
         if equals_case_insensitive "$hostname" "$local_hostname"; then
             for target_pid in "$@"; do
                 if (( pid == target_pid )); then
-                    printf '%s\n' "$windowid"
+                    printf '%s\n' "$windowid $hostname $pid $desktop $class $title"
                     continue 2
                 fi
             done
@@ -109,14 +110,21 @@ select_windowid_by_class_or_pid() {
     done
 }
 
-select_normal_windows() {
-    local windowid
-    while read -r windowid; do
+where_normal_window() {
+    local windowid rest
+    while read -r windowid rest; do
         case "$(get_window_type "$windowid")" in
             '' | _NET_WM_WINDOW_TYPE_NORMAL | _NET_WM_WINDOW_TYPE_DIALOG)
-                printf '%s\n' "$windowid"
+                printf '%s\n' "$windowid $rest"
                 ;;
         esac
+    done
+}
+
+select_windowid() {
+    local windowid rest
+    while read -r windowid rest; do
+        printf '%s\n' "$windowid"
     done
 }
 
@@ -218,7 +226,7 @@ list_pids_for_command_from_procfs() {
 list_windows() {
     local windowid desktop pid wm_class hostname title
     while read -r windowid desktop pid wm_class hostname title; do
-        printf '%s\n' "$windowid $hostname $pid $desktop ${wm_class##*.}"
+        printf '%s\n' "$windowid $hostname $pid $desktop ${wm_class##*.} $title"
     done < <(wmctrl -lpx)
 }
 
