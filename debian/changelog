@@ -1,3 +1,9 @@
+jumpapp (0.6-1) trusty; urgency=low
+
+  * Add `-L` option
+
+ -- Michael Kropat <mail@michael.kropat.name>  Thu, 26 Feb 2015 01:14:12 -0500
+
 jumpapp (0.5-1) trusty; urgency=low
 
   * Do not check hostname for WM_CLASS match
