@@ -92,7 +92,7 @@ select_windowid_by_class_or_pid() {
 
     local local_hostname=$(get_hostname)
 
-    local windowid pid desktop class
+    local windowid hostname pid desktop class
     while read -r windowid hostname pid desktop class; do
         if equals_case_insensitive "$class" "$target_class"; then
             printf '%s\n' "$windowid"
