@@ -2,7 +2,7 @@
 
 setUp() {
     active_windowid=0
-    get_window_type_output=_NET_WM_WINDOW_TYPE_NORMAL
+    get_window_types_output=_NET_WM_WINDOW_TYPE_NORMAL
     list_pids_for_command_output=
 
     has_command_val=0
@@ -176,7 +176,7 @@ it_calls_activate_window_with_first_windowid_when_second_is_active_and_r_flag_is
 it_throws_an_error_when_process_is_running_but_window_type_is_not_normal() {
     list_pids_for_command_output='123'
     list_windows_output='456 somehost 123 -1 someapp'
-    get_window_type_output=_NET_WM_WINDOW_TYPE_DESKTOP
+    get_window_types_output=_NET_WM_WINDOW_TYPE_DESKTOP
 
     main someapp >/dev/null
 
@@ -185,7 +185,7 @@ it_throws_an_error_when_process_is_running_but_window_type_is_not_normal() {
 
 it_calls_activate_window_with_second_windowid_when_first_is_not_normal() {
     # I haven't figured out how to test this yet, since we need to output
-    # different values from `get_window_type` and `get_window_type` is being
+    # different values from `get_window_typees` and `get_window_types` is being
     # called in a subshell.
     :
 }
@@ -262,8 +262,8 @@ get_active_windowid() {
     printf '%s\n' "$active_windowid"
 }
 
-get_window_type() {
-    printf '%s\n' "$get_window_type_output"
+get_window_types() {
+    printf '%s\n' "$get_window_types_output"
 }
 
 activate_window() {

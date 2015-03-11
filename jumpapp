@@ -119,7 +119,7 @@ where_class_or_pid_matches() {
 where_normal_window() {
     local windowid rest
     while read -r windowid rest; do
-        case "$(get_window_type "$windowid")" in
+        case "$(get_window_types "$windowid")" in
             '' | _NET_WM_WINDOW_TYPE_NORMAL | _NET_WM_WINDOW_TYPE_DIALOG)
                 printf '%s\n' "$windowid $rest"
                 ;;
@@ -249,7 +249,7 @@ get_active_windowid() {
     printf '%s\n' "$windowid"
 }
 
-get_window_type() {
+get_window_types() {
     local name window_type
     read -r name window_type < <(xprop -id "$1" ' $0\n' _NET_WM_WINDOW_TYPE)
     if [[ "$window_type" != 'not found.' ]]; then
