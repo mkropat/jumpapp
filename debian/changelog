@@ -1,3 +1,9 @@
+jumpapp (0.7-1) trusty; urgency=low
+
+  * Handle multiple _NET_WM_WINDOW_TYPE values
+
+ -- Michael Kropat <mail@michael.kropat.name>  Tue, 10 Mar 2015 21:53:13 -0400
+
 jumpapp (0.6-1) trusty; urgency=low
 
   * Add `-L` option
