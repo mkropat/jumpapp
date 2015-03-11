@@ -183,6 +183,17 @@ it_throws_an_error_when_process_is_running_but_window_type_is_not_normal() {
     assertNotNull 'die() called' "$die_called"
 }
 
+it_calls_activate_window_when_get_window_types_returns_multiple_entires() {
+    get_window_types_output='_NET_SOME_TYPE, _NET_WM_WINDOW_TYPE_NORMAL, _NET_ANOTHER_TYPE'
+    list_pids_for_command_output='123'
+    list_windows_output='456 somehost 123 -1 some-class'
+
+    main someapp
+
+    assertNotNull 'activate_window() called' "$activate_window_called"
+    assertEquals 456 "$activate_window_arg"
+}
+
 it_calls_activate_window_with_second_windowid_when_first_is_not_normal() {
     # I haven't figured out how to test this yet, since we need to output
     # different values from `get_window_typees` and `get_window_types` is being
