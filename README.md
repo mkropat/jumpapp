@@ -1,6 +1,6 @@
 # jumpapp
 
-*A faster way to launch applications and switch between them*
+*A run-or-raise application switcher for any X11 desktop*
 
 The idea is simple — bind a key for any given application that will:
 
@@ -9,7 +9,7 @@ The idea is simple — bind a key for any given application that will:
 
 Pressing the key again will cycle to the application's next window, if there's more than one.
 
-In short, **jumpapp** is probably the fastest way for a keyboard-junkie to switch between applications in a modern desktop environment.  Once [installed](#Installation), all you have to do is configure the key bindings you want to use:
+In short, **jumpapp** is probably the fastest way for a keyboard-junkie to switch between applications in a modern desktop environment.  Once [installed](#installation), all you have to do is configure the key bindings you want to use:
 
 ![Settings Example](http://i.imgur.com/dAj8NDZ.png "On Ubuntu it's under All Settings → Keyboard → Shortcuts")
 
