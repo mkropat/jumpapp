@@ -60,6 +60,9 @@ dist: $(PACKAGE_FILE)
 $(PACKAGE_FILE): $(FILES)
 	tar --transform 's,^,$(PACKAGE_DIR)/,S' -cjf "$@" $^
 
+.PHONY: distclean
+distclean: clean
+	-rm -f jumpapp*.tar.bz2 jumpapp*.changes jumpapp*.deb jumpapp*.rpm
 
 ### make deb deb-src deb-clean ###
 
