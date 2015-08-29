@@ -90,7 +90,9 @@ needs_passthrough() {
 list_matching_windows() {
     list_windows |
         where_class_or_pid_matches "$@" |
-        where_normal_window   # spawns `xprop` process per-id, so do it last
+        where_normal_window |
+        prepend_window_time |
+        sort -r
 }
 
 where_class_or_pid_matches() {
@@ -127,17 +129,24 @@ where_normal_window() {
     done
 }
 
+prepend_window_time() {
+      local windowid rest
+      while read -r windowid rest; do
+          printf '%s\n' "$(get_window_user_time "$windowid") $windowid $rest"
+      done
+}
+
 select_windowid() {
-    local windowid rest
-    while read -r windowid rest; do
+    local time windowid rest
+    while read -r time windowid rest; do
         printf '%s\n' "$windowid"
     done
 }
 
 print_windows() {
-    local windowid hostname pid desktop class title
-    while read -r windowid hostname pid desktop class title; do
-        printf '%s: %s\n' "$windowid $hostname $pid $desktop $class" "$title"
+    local time windowid hostname pid desktop class title
+    while read -r time windowid hostname pid desktop class title; do
+        printf '%s: %s\n' ""$time" $windowid $hostname $pid $desktop $class" "$title"
     done
 }
 
@@ -254,6 +263,21 @@ get_window_types() {
     read -r name window_types < <(xprop -id "$1" ' $0+\n' _NET_WM_WINDOW_TYPE)
     if [[ "$window_types" != 'not found.' ]]; then
         printf '%s\n' "$window_types"
+    fi
+}
+
+get_window_user_time() {
+    local name time time_window
+    read -r name time_window < <(xprop -id "$1" ' $0\n' _NET_WM_USER_TIME_WINDOW)
+    if [[ "$time_window" = 'not found.' ]]; then
+        time_window="$1"
+    fi
+
+    read -r name time < <(xprop -id "$time_window" ' $0\n' _NET_WM_USER_TIME)
+    if [[ "$time" = 'not found.' ]]; then
+        echo 0
+    else
+        printf '%s\n' "$time"
     fi
 }
 
