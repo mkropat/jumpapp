@@ -260,35 +260,35 @@ list_windows() {
 }
 
 get_active_windowid() {
-    local name windowid
-    read name windowid < <(xprop -root ' $0\n' _NET_ACTIVE_WINDOW)
+    local windowid
+    read _ windowid < <(xprop -root ' $0\n' _NET_ACTIVE_WINDOW)
     printf '%s\n' "$windowid"
 }
 
 get_window_types() {
-    local name window_type
-    read -r name window_types < <(xprop -id "$1" ' $0+\n' _NET_WM_WINDOW_TYPE)
+    local window_type
+    read -r _ window_types < <(xprop -id "$1" ' $0+\n' _NET_WM_WINDOW_TYPE)
     if [[ "$window_types" != 'not found.' ]]; then
         printf '%s\n' "$window_types"
     fi
 }
 
 get_window_user_time() {
-    local name time time_window
-    read -r name time_window < <(xprop -id "$1" ' $0\n' _NET_WM_USER_TIME_WINDOW)
+    local time time_window
+    read -r _ time_window < <(xprop -id "$1" ' $0\n' _NET_WM_USER_TIME_WINDOW)
     if [[ "$time_window" != 0x* ]]; then
         time_window="$1"
     fi
 
-    read -r name time < <(xprop -id "$time_window" ' $0\n' _NET_WM_USER_TIME)
+    read -r _ time < <(xprop -id "$time_window" ' $0\n' _NET_WM_USER_TIME)
 
     # workaround for window managers with broken _NET_WM_USER_TIME_WINDOW support
     if ! is_number "$time" && [[ "$1" != "$time_window" ]]; then
-        read -r name time < <(xprop -id "$1" ' $0\n' _NET_WM_USER_TIME)
+        read -r _ time < <(xprop -id "$1" ' $0\n' _NET_WM_USER_TIME)
     fi
 
     if is_number "$time"; then
-        printf '%s\n' "$time"
+        echo "$time"
     else
         echo 0
     fi
