@@ -16,6 +16,7 @@ Options:
         (see Argument Passthrough in man page)
   -c NAME -- find window using NAME as WM_CLASS (instead of COMMAND)
   -i NAME -- find process using NAME as the command name (instead of COMMAND)"
+  -t NAME -- process window has to have NAME as the window title
 }
 
 main() {
@@ -32,6 +33,7 @@ main() {
             n) fork='' ;;
             p) passthrough=1; force=1 ;; # passthrough implies force
             r) in_reverse=1 ;;
+            t) matching_title="$OPTARG" ;;
         esac
     done
     shift $(( OPTIND - 1 ))
@@ -239,7 +241,9 @@ list_pids_for_command_from_procfs() {
 list_windows() {
     local windowid desktop pid wm_class hostname title
     while read -r windowid desktop pid wm_class hostname title; do
+    if [[ "$matching_title" == '' || "$title" =~ "$matching_title" ]]; then
         printf '%s\n' "$windowid $hostname $pid $desktop ${wm_class##*.} $title"
+    fi
     done < <(wmctrl -lpx)
 }
 
