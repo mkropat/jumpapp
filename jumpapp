@@ -23,7 +23,7 @@ main() {
     local classid cmdid force fork=1 list passthrough='' in_reverse=''
 
     local OPTIND
-    while getopts c:fhi:Lnpr opt; do
+    while getopts c:fhi:Lnprt: opt; do
         case "$opt" in
             c) classid="$OPTARG" ;;
             f) force=1 ;;
