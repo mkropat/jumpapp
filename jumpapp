@@ -77,7 +77,7 @@ jumpapp() {
         activate_window "$(get_subsequent_window "${windowids[@]}")" ||
             die "Error: unable to focus window for '$cmdid'"
     else
-        if (( ${#pids[@]} )) && [[ -z "$force" ]]; then
+        if [[ -z "$matching_title" ]] && (( ${#pids[@]} )) && [[ -z "$force" ]]; then
             die "Error: found running process for '$cmdid', but found no window to jump to"
         else
             launch_command "$@"
