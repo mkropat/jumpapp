@@ -15,14 +15,15 @@ Options:
   -p -- always launch COMMAND when ARGs passed
         (see Argument Passthrough in man page)
   -c NAME -- find window using NAME as WM_CLASS (instead of COMMAND)
-  -i NAME -- find process using NAME as the command name (instead of COMMAND)"
+  -i NAME -- find process using NAME as the command name (instead of COMMAND)
+  -w -- only find the applications in the current workspace"
 }
 
 main() {
     local classid cmdid force fork=1 list passthrough='' in_reverse=''
 
     local OPTIND
-    while getopts c:fhi:Lnpr opt; do
+    while getopts c:fhi:Lnprw opt; do
         case "$opt" in
             c) classid="$OPTARG" ;;
             f) force=1 ;;
@@ -32,6 +33,7 @@ main() {
             n) fork='' ;;
             p) passthrough=1; force=1 ;; # passthrough implies force
             r) in_reverse=1 ;;
+            w) search_current_workspace_only=1 ;;
         esac
     done
     shift $(( OPTIND - 1 ))
@@ -240,7 +242,17 @@ list_windows() {
     local windowid desktop pid wm_class hostname title
     while read -r windowid desktop pid wm_class hostname title; do
         printf '%s\n' "$windowid $hostname $pid $desktop ${wm_class##*.} $title"
-    done < <(wmctrl -lpx)
+
+	done < <(
+        if [[ $search_current_workspace_only ]];
+        then
+	        # gets the current workspace (virtual desktop) index
+            local current_workspace_index=`wmctrl -d | awk '$2 == "*" { print $1 }'`
+            wmctrl -lpx | awk '$2 == '$current_workspace_index' { print $0 } '
+        else
+            wmctrl -lpx
+        fi
+	)
 }
 
 get_active_windowid() {
