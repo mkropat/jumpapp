@@ -21,12 +21,13 @@ In short, **jumpapp** is probably the fastest way for a keyboard-junkie to switc
     Otherwise, launch COMMAND (with opitonal ARGs) to start the application.
 
     Options:
-      -f -- force COMMAND to launch if process found but no windows found
-      -L -- list matching windows for COMMAND and quit
-      -n -- do not fork into background when launching COMMAND
       -r -- cycle through windows in reverse order
+      -f -- force COMMAND to launch if process found but no windows found
+      -n -- do not fork into background when launching COMMAND
       -p -- always launch COMMAND when ARGs passed
             (see Argument Passthrough in man page)
+      -L -- list matching windows for COMMAND and quit
+      -t NAME -- process window has to have NAME as the window title
       -c NAME -- find window using NAME as WM_CLASS (instead of COMMAND)
       -i NAME -- find process using NAME as the command name (instead of COMMAND)
 
