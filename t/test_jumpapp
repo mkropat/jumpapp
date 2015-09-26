@@ -173,6 +173,26 @@ it_calls_activate_window_with_first_windowid_when_second_is_active_and_r_flag_is
     assertEquals 456 "$activate_window_arg"
 }
 
+it_calls_activate_window_with_windowid_that_matches_title_passed_with_-t() {
+    list_windows_output='456 somehost 123 -1 someapp some window lowercase
+                         567 somehost 123 -1 someapp Some window and text
+                         678 somehost 123 -1 someapp'
+
+    main -t "Some window" someapp
+
+    assertNotNull 'activate_window() called' "$activate_window_called"
+    assertEquals 567 "$activate_window_arg"
+}
+
+it_calls_fork_command_if_no_matching_windows_but_matching_pids_and_title_passed_with_-t() {
+    list_pids_for_command_output='123'
+
+    main -t "Any window" someapp >/dev/null
+
+    assertNull 'activate_window() not called' "$activate_window_called"
+    assertNotNull 'fork_command() called' "$fork_command_called"
+}
+
 it_throws_an_error_when_process_is_running_but_window_type_is_not_normal() {
     list_pids_for_command_output='123'
     list_windows_output='456 somehost 123 -1 someapp'

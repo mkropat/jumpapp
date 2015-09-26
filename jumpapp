@@ -15,12 +15,12 @@ Options:
   -p -- always launch COMMAND when ARGs passed
         (see Argument Passthrough in man page)
   -c NAME -- find window using NAME as WM_CLASS (instead of COMMAND)
-  -i NAME -- find process using NAME as the command name (instead of COMMAND)"
-  -t NAME -- process window has to have NAME as the window title
+  -i NAME -- find process using NAME as the command name (instead of COMMAND)
+  -t NAME -- process window has to have NAME as the window title"
 }
 
 main() {
-    local classid cmdid force fork=1 list passthrough='' in_reverse=''
+    local classid cmdid force fork=1 list passthrough='' in_reverse='' matching_title
 
     local OPTIND
     while getopts c:fhi:Lnprt: opt; do
@@ -33,7 +33,7 @@ main() {
             n) fork='' ;;
             p) passthrough=1; force=1 ;; # passthrough implies force
             r) in_reverse=1 ;;
-            t) matching_title="$OPTARG" ;;
+            t) matching_title="$OPTARG"; force=1 ;;
         esac
     done
     shift $(( OPTIND - 1 ))
@@ -77,7 +77,7 @@ jumpapp() {
         activate_window "$(get_subsequent_window "${windowids[@]}")" ||
             die "Error: unable to focus window for '$cmdid'"
     else
-        if [[ -z "$matching_title" ]] && (( ${#pids[@]} )) && [[ -z "$force" ]]; then
+        if (( ${#pids[@]} )) && [[ -z "$force" ]]; then
             die "Error: found running process for '$cmdid', but found no window to jump to"
         else
             launch_command "$@"
@@ -91,8 +91,17 @@ needs_passthrough() {
 
 list_matching_windows() {
     list_windows |
+        where_title_matches "$matching_title" |
         where_class_or_pid_matches "$@" |
         where_normal_window   # spawns `xprop` process per-id, so do it last
+}
+
+where_title_matches() {
+    while read -r windowid hostname pid desktop class title; do
+      if [[ "$matching_title" == '' || "$title" =~ "$matching_title" ]]; then
+          printf '%s\n' "$windowid $hostname $pid $desktop $class $title"
+      fi
+    done
 }
 
 where_class_or_pid_matches() {
@@ -241,9 +250,7 @@ list_pids_for_command_from_procfs() {
 list_windows() {
     local windowid desktop pid wm_class hostname title
     while read -r windowid desktop pid wm_class hostname title; do
-    if [[ "$matching_title" == '' || "$title" =~ "$matching_title" ]]; then
         printf '%s\n' "$windowid $hostname $pid $desktop ${wm_class##*.} $title"
-    fi
     done < <(wmctrl -lpx)
 }
 
