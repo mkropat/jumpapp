@@ -8,21 +8,22 @@ Jump to (focus) the first open window for an application, if it's running.
 Otherwise, launch COMMAND (with opitonal ARGs) to start the application.
 
 Options:
-  -f -- force COMMAND to launch if process found but no windows found
-  -L -- list matching windows for COMMAND and quit
-  -n -- do not fork into background when launching COMMAND
   -r -- cycle through windows in reverse order
+  -f -- force COMMAND to launch if process found but no windows found
+  -n -- do not fork into background when launching COMMAND
   -p -- always launch COMMAND when ARGs passed
         (see Argument Passthrough in man page)
+  -L -- list matching windows for COMMAND and quit
+  -t NAME -- process window has to have NAME as the window title
   -c NAME -- find window using NAME as WM_CLASS (instead of COMMAND)
   -i NAME -- find process using NAME as the command name (instead of COMMAND)"
 }
 
 main() {
-    local classid cmdid force fork=1 list passthrough='' in_reverse=''
+    local classid cmdid force fork=1 list passthrough in_reverse matching_title
 
     local OPTIND
-    while getopts c:fhi:Lnpr opt; do
+    while getopts c:fhi:Lnprt: opt; do
         case "$opt" in
             c) classid="$OPTARG" ;;
             f) force=1 ;;
@@ -32,6 +33,7 @@ main() {
             n) fork='' ;;
             p) passthrough=1; force=1 ;; # passthrough implies force
             r) in_reverse=1 ;;
+            t) matching_title="$OPTARG"; force=1 ;;
         esac
     done
     shift $(( OPTIND - 1 ))
@@ -89,8 +91,17 @@ needs_passthrough() {
 
 list_matching_windows() {
     list_windows |
+        where_title_matches "$matching_title" |
         where_class_or_pid_matches "$@" |
         where_normal_window   # spawns `xprop` process per-id, so do it last
+}
+
+where_title_matches() {
+    while read -r windowid hostname pid desktop class title; do
+      if [[ "$matching_title" == '' || "$title" =~ "$matching_title" ]]; then
+          printf '%s\n' "$windowid $hostname $pid $desktop $class $title"
+      fi
+    done
 }
 
 where_class_or_pid_matches() {
