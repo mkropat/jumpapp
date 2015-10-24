@@ -2,6 +2,8 @@
 
 *A run-or-raise application switcher for any X11 desktop*
 
+[![Build Status](https://travis-ci.org/mkropat/jumpapp.svg?branch=master)](https://travis-ci.org/mkropat/jumpapp)
+
 The idea is simple — bind a key for any given application that will:
 
 - launch the application, if it's not already running, or

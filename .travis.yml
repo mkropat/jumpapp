@@ -1,0 +1,10 @@
+language: bash
+
+addons:
+  apt:
+    packages:
+    - devscripts
+    - shunit2
+
+script:
+    - make test
