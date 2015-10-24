@@ -21,7 +21,7 @@ Options:
 }
 
 main() {
-    local classid cmdid force fork=1 list passthrough in_reverse matching_title
+    local classid cmdid force fork=1 list passthrough in_reverse matching_title workspace_filter
 
     local OPTIND
     while getopts c:fhi:Lnprt:w opt; do
@@ -35,7 +35,7 @@ main() {
             p) passthrough=1; force=1 ;; # passthrough implies force
             r) in_reverse=1 ;;
             t) matching_title="$OPTARG"; force=1 ;;
-            w) search_current_workspace_only=1 ;;
+            w) workspace_filter="$(get_active_workspace)"; force=1 ;;
         esac
     done
     shift $(( OPTIND - 1 ))
@@ -95,7 +95,16 @@ list_matching_windows() {
     list_windows |
         where_title_matches "$matching_title" |
         where_class_or_pid_matches "$@" |
+        where_workspace_matches |
         where_normal_window   # spawns `xprop` process per-id, so do it last
+}
+
+where_workspace_matches() {
+    while read -r windowid hostname pid desktop class title; do
+        if [[ -z "$workspace_filter" ]] || [[ "$workspace_filter" == "$desktop" ]] || [[ "$desktop" -lt 0 ]]; then
+            printf '%s\n' "$windowid $hostname $pid $desktop $class $title"
+        fi
+    done
 }
 
 where_title_matches() {
@@ -253,17 +262,7 @@ list_windows() {
     local windowid desktop pid wm_class hostname title
     while read -r windowid desktop pid wm_class hostname title; do
         printf '%s\n' "$windowid $hostname $pid $desktop ${wm_class##*.} $title"
-
-    done < <(
-        if [[ $search_current_workspace_only ]];
-        then
-            # gets the current workspace (virtual desktop) index
-            local current_workspace_index=`wmctrl -d | awk '$2 == "*" { print $1 }'`
-            wmctrl -lpx | awk '$2 == '$current_workspace_index' { print $0 } '
-        else
-            wmctrl -lpx
-        fi
-    )
+    done < <(wmctrl -lpx)
 }
 
 get_active_windowid() {
@@ -273,11 +272,20 @@ get_active_windowid() {
 }
 
 get_window_types() {
-    local name window_type
+    local name window_types
     read -r name window_types < <(xprop -id "$1" ' $0+\n' _NET_WM_WINDOW_TYPE)
     if [[ "$window_types" != 'not found.' ]]; then
         printf '%s\n' "$window_types"
     fi
+}
+
+get_active_workspace() {
+    local workspace flag rest
+    while read -r workspace flag rest; do
+        if [[ "$flag" == "*" ]]; then
+            printf '%s\n' "$workspace"
+        fi
+    done < <(wmctrl -d)
 }
 
 activate_window() {
