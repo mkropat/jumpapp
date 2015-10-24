@@ -193,6 +193,28 @@ it_calls_fork_command_if_no_matching_windows_but_matching_pids_and_title_passed_
     assertNotNull 'fork_command() called' "$fork_command_called"
 }
 
+it_calls_activate_window_with_windowid_of_first_window_on_workspace_when_-w_passed() {
+    active_workspace=1
+    list_windows_output='456 somehost 123 0 someapp
+                         567 somehost 123 1 someapp
+                         678 somehost 123 0 someapp'
+    main -w someapp
+
+    assertNotNull 'activate_window() called' "$activate_window_called"
+    assertEquals 567 "$activate_window_arg"
+}
+
+it_calls_activate_window_with_windowid_where_workspace_is_-1_when_-w_passed() {
+    active_workspace=1
+    list_windows_output='456 somehost 123 0 someapp
+                         567 somehost 123 -1 someapp
+                         678 somehost 123 0 someapp'
+    main -w someapp
+
+    assertNotNull 'activate_window() called' "$activate_window_called"
+    assertEquals 567 "$activate_window_arg"
+}
+
 it_throws_an_error_when_process_is_running_but_window_type_is_not_normal() {
     list_pids_for_command_output='123'
     list_windows_output='456 somehost 123 -1 someapp'
@@ -295,6 +317,10 @@ get_active_windowid() {
 
 get_window_types() {
     printf '%s\n' "$get_window_types_output"
+}
+
+get_active_workspace() {
+    printf '%s\n' "$active_workspace"
 }
 
 activate_window() {
