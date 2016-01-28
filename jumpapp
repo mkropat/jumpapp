@@ -77,8 +77,6 @@ jumpapp() {
     if [[ -n "$focusOrMinimize" ]]; then    
      if [[ ${#windowids[@]} -eq "1" ]]; then      
       	if [[ "$(get_active_windowid)" -eq "${windowids[0]}" ]]; then
-      	echo "zde"
-      	echo $(get_active_windowid)
 	  wmctrl -i -r $(get_active_windowid) -b toggle,shaded
 	fi	
       fi
