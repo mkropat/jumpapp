@@ -10,6 +10,7 @@ Otherwise, launch COMMAND (with opitonal ARGs) to start the application.
 Options:
   -r -- cycle through windows in reverse order
   -f -- force COMMAND to launch if process found but no windows found
+  -m -- if a single window is already open and in focus - minimize it
   -n -- do not fork into background when launching COMMAND
   -p -- always launch COMMAND when ARGs passed
         (see Argument Passthrough in man page)
@@ -25,16 +26,17 @@ Options:
 }
 
 main() {
-    local classid cmdid force fork=1 list passthrough in_reverse matching_title workspace_filter mouse_center
+    local classid cmdid force fork=1 list passthrough focusOrMinimize in_reverse matching_title workspace_filter mouse_center
 
     local OPTIND
-    while getopts c:fhi:Lnprt:wRC opt; do
+    while getopts c:fhi:Lmnprt:w opt; do
         case "$opt" in
             c) classid="$OPTARG" ;;
             f) force=1 ;;
             h) show_usage; exit 0 ;;
             i) cmdid="$OPTARG" ;;
             L) list=1 ;;
+            m) focusOrMinimize=1 ;;
             n) fork='' ;;
             p) passthrough=1; force=1 ;; # passthrough implies force
             r) in_reverse=1 ;;
@@ -81,6 +83,16 @@ jumpapp() {
     local windowids=(
       $(list_matching_windows "$classid" "${pids[@]}" | select_windowid)
     )
+
+    if [[ -n "$focusOrMinimize" ]]; then
+     if [[ ${#windowids[@]} -eq "1" ]]; then
+      	if [[ "$(get_active_windowid)" -eq "${windowids[0]}" ]]; then
+      	echo "zde"
+      	echo $(get_active_windowid)
+	  wmctrl -i -r $(get_active_windowid) -b toggle,shaded
+	fi
+      fi
+    fi
 
     if [[ -n "$list" ]]; then
       printf 'Matched Windows [%d]\n' ${#windowids[@]}
