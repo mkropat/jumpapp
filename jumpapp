@@ -17,14 +17,15 @@ Options:
   -t NAME -- process window has to have NAME as the window title
   -c NAME -- find window using NAME as WM_CLASS (instead of COMMAND)
   -i NAME -- find process using NAME as the command name (instead of COMMAND)
-  -w -- only find the applications in the current workspace"
+  -w -- only find the applications in the current workspace
+  -g -- switch to the last focused window when dealing with multiple matching windows"
 }
 
 main() {
-    local classid cmdid force fork=1 list passthrough in_reverse matching_title workspace_filter
+    local classid cmdid force fork=1 list passthrough in_reverse matching_title workspace_filter match_last_focused_window
 
     local OPTIND
-    while getopts c:fhi:Lnprt:w opt; do
+    while getopts c:fhi:Lnprt:wg opt; do
         case "$opt" in
             c) classid="$OPTARG" ;;
             f) force=1 ;;
@@ -36,6 +37,7 @@ main() {
             r) in_reverse=1 ;;
             t) matching_title="$OPTARG"; force=1 ;;
             w) workspace_filter="$(get_active_workspace)"; force=1 ;;
+            g) match_last_focused_window=1 ;;
         esac
     done
     shift $(( OPTIND - 1 ))
@@ -164,9 +166,11 @@ print_windows() {
 }
 
 get_subsequent_window() {
-    if [[ -n "$in_reverse" ]]; then
+    if [[ -n $in_reverse ]]; then
         get_prev_window "$@"
-    else
+	elif [[ -n $match_last_focused_window ]]; then
+        get_last_focused_window "$@"
+	else
         get_next_window "$@"
     fi
 }
@@ -184,6 +188,41 @@ get_prev_window() {
         done
 
         printf '%s\n' "$prev"
+    fi
+}
+
+get_last_focused_window() {
+    local matched_windows=($@)
+    local recent_windows=($(xprop -root | grep "^_NET_CLIENT_LIST_STACKING" | cut -d '#' -f2- | tr ',' ' '))
+    local active_window=$(get_active_windowid)
+    local recent_window
+
+    for ((i=${#recent_windows[@]}-1; i>=0; i--)) do
+
+        recent_window=${recent_windows[i]}
+        if are_numbers_equal $recent_window $active_window; then
+            continue
+        fi
+
+        for matched_window in ${matched_windows[@]}; do
+            if are_numbers_equal $recent_window $matched_window; then
+                printf '%s\n' $matched_window
+                return
+            fi
+        done
+    done
+
+    get_next_window "$@"
+}
+
+are_numbers_equal() {
+    local success=0
+    local failure=1
+
+    if [[ $(($1)) == $(($2)) ]]; then
+        return $success
+    else
+        return $failure
     fi
 }
 
