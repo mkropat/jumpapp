@@ -21,7 +21,7 @@ Options:
 }
 
 main() {
-    local classid cmdid force fork=1 list passthrough in_reverse matching_title workspace_filter match_last_focused_window
+    local classid cmdid force fork=1 list passthrough in_reverse matching_title workspace_filter
 
     local OPTIND
     while getopts c:fhi:Lnprt:w opt; do
