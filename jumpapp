@@ -166,8 +166,10 @@ print_windows() {
 get_subsequent_window() {
     if [[ -n $in_reverse ]]; then
         get_oldest_focused_window "$@"
+        get_prev_window "$@"
 	else
         get_most_recently_focused_window "$@"
+        get_next_window "$@"
     fi
 }
 
@@ -183,8 +185,6 @@ get_oldest_focused_window() {
 
         get_matching_window_from_list $window ${unordered_windows[@]}
     done
-
-    get_prev_window "$@"
 }
 
 get_most_recently_focused_window() {
@@ -199,8 +199,6 @@ get_most_recently_focused_window() {
 
         get_matching_window_from_list $window ${unordered_windows[@]}
     done
-
-    get_next_window "$@"
 }
 
 get_matching_window_from_list() {
