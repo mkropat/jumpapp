@@ -164,11 +164,69 @@ print_windows() {
 }
 
 get_subsequent_window() {
-    if [[ -n "$in_reverse" ]]; then
+    if [[ -n $in_reverse ]]; then
+        get_oldest_focused_window "$@"
         get_prev_window "$@"
-    else
+	else
+        get_most_recently_focused_window "$@"
         get_next_window "$@"
     fi
+}
+
+get_oldest_focused_window() {
+    local unordered_windows=($@)
+    local windows_in_stacking_order=($(list_stacking_order))
+    local active_window=$(get_active_windowid)
+
+    for window in ${windows_in_stacking_order[@]}; do
+        if numerically_equal $window $active_window; then
+            continue
+        fi
+
+        get_matching_window_from_list $window ${unordered_windows[@]}
+    done
+}
+
+get_most_recently_focused_window() {
+    local unordered_windows=($@)
+    local windows_in_stacking_order=($(list_stacking_order | reverse_words))
+    local active_window=$(get_active_windowid)
+
+    for window in ${windows_in_stacking_order[@]}; do
+        if numerically_equal $window $active_window; then
+            continue
+        fi
+
+        get_matching_window_from_list $window ${unordered_windows[@]}
+    done
+}
+
+get_matching_window_from_list() {
+    local window_to_search_for=$1
+    local window_list=${@:2}
+
+    for window in ${window_list[@]}; do
+        if numerically_equal $window_to_search_for $window; then
+            printf '%s\n' $window
+            return
+        fi
+    done
+}
+
+numerically_equal() {
+    if [[ $(($1)) == $(($2)) ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+list_stacking_order() {
+    xprop -root | grep '^_NET_CLIENT_LIST_STACKING' | cut -d '#' -f2- | tr ',' ' '
+}
+
+reverse_words() {
+    awk '{ for (i=NF; i>1; i--) printf("%s ",$i); print $1; }'
 }
 
 get_prev_window() {
