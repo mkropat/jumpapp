@@ -336,6 +336,28 @@ it_gets_oldest_focused_windows_in_order() {
                  "${expected_order}" "$(get_oldest_focused_window ${matched_unordered_windows})"
 }
 
+it_ignores_stacking_order_when_active_window_is_present_in_get_most_recently_focused_windows_in_order() {
+    active_windowid=0
+
+    local matched_unordered_windows='0x0bad 0x0c0de 0x0d00d 0x0'
+    local expected_order=''
+    list_stacking_order_output='0xc0de 0x1200003 0xd00d 0x1000004 0x460017f 0x460017c 0x32064c5 0x400004 0xe00004 0xbad'
+
+    assertEquals 'Do nothing to enable fallback to default cycling through when one of the matched windows in already active' \
+                 "${expected_order}" "$(get_most_recently_focused_window ${matched_unordered_windows})"
+}
+
+it_ignores_stacking_order_when_active_window_is_present_in_get_oldest_focused_windows_in_order() {
+    active_windowid=0
+
+    local matched_unordered_windows='0x0bad 0x0c0de 0x0d00d 0x0'
+    local expected_order=''
+    list_stacking_order_output='0xc0de 0x1200003 0xd00d 0x1000004 0x460017f 0x460017c 0x32064c5 0x400004 0xe00004 0xbad'
+
+    assertEquals 'Do nothing to enable fallback to default cycling through when one of the matched windows in already active' \
+                 "${expected_order}" "$(get_oldest_focused_window ${matched_unordered_windows})"
+}
+
 ##### Test Doubles #####
 
 source ./jumpapp # load app now, so we can override it

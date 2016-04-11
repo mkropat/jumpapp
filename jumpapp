@@ -178,11 +178,12 @@ get_oldest_focused_window() {
     local windows_in_stacking_order=($(list_stacking_order))
     local active_window=$(get_active_windowid)
 
-    for window in ${windows_in_stacking_order[@]}; do
-        if numerically_equal $window $active_window; then
-            continue
-        fi
+    local active_window_matches=($(get_matching_window_from_list ${active_window} ${unordered_windows[@]}))
+    if [[ ${#active_window_matches[@]} -gt 0 ]]; then
+        return
+    fi
 
+    for window in ${windows_in_stacking_order[@]}; do
         get_matching_window_from_list $window ${unordered_windows[@]}
     done
 }
@@ -192,11 +193,12 @@ get_most_recently_focused_window() {
     local windows_in_stacking_order=($(list_stacking_order | reverse_words))
     local active_window=$(get_active_windowid)
 
-    for window in ${windows_in_stacking_order[@]}; do
-        if numerically_equal $window $active_window; then
-            continue
-        fi
+    local active_window_matches=($(get_matching_window_from_list ${active_window} ${unordered_windows[@]}))
+    if [[ -n ${active_window_matches[@]} ]]; then
+        return
+    fi
 
+    for window in ${windows_in_stacking_order[@]}; do
         get_matching_window_from_list $window ${unordered_windows[@]}
     done
 }
