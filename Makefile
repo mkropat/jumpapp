@@ -12,8 +12,7 @@ AUTHOR	= Michael Kropat <mail@michael.kropat.name>
 DATE	= Feb 26, 2015
 FILES	= t README.md LICENSE.txt Makefile jumpapp jumpappify-desktop-entry
 
-.PHONY: all check test install uninstall
-
+.PHONY: all
 all: jumpapp.1
 
 jumpapp.1: README.man.md
@@ -26,12 +25,14 @@ README.man.md: README.md
 	echo '% $(DATE)' >>"$@"
 	perl -ne 's/^##/#/; print if ! (/^# Installation/ ... /^# /) || /^# (?!Installation)/' "$<" >>"$@"
 
+.PHONY: check test
 check: test
 test:
 	-shellcheck --exclude=SC2016,SC2034 jumpapp jumpappify-desktop-entry
 	-checkbashisms jumpappify-desktop-entry
 	t/test_jumpapp
 
+.PHONY: install
 install:
 	mkdir -p "$(BIN)"
 	cp jumpapp jumpappify-desktop-entry "$(BIN)"
@@ -39,10 +40,12 @@ install:
 	mkdir -p "$(MAN)/man1"
 	cp jumpapp.1 "$(MAN)/man1/"
 
+.PHONY: uninstall
 uninstall:
 	-rm -f "$(BIN)/jumpapp" "$(BIN)/jumpappify-desktop-entry"
 	-rm -f "$(MAN)/man1/jumpapp.1"
 
+.PHONY: clean
 clean:
 	-rm -f README.man.md
 	-rm -f jumpapp*.tar.bz2 jumpapp*.deb jumpapp*.rpm
@@ -60,8 +63,7 @@ $(PACKAGE_FILE): $(FILES)
 
 ### make deb deb-src deb-clean ###
 
-.PHONY: deb deb-src deb-clean
-
+.PHONY: deb
 deb: jumpapp_$(VERSION)-1_all.deb
 
 jumpapp_$(VERSION)-1_all.deb: $(PACKAGE_FILE) debian/copyright
@@ -72,6 +74,7 @@ jumpapp_$(VERSION)-1_all.deb: $(PACKAGE_FILE) debian/copyright
 	mv "../$@" .
 	mv ../jumpapp_$(VERSION)-1_*.changes .
 
+.PHONY: deb-src
 deb-src: jumpapp_$(VERSION)-1_source.changes
 
 jumpapp_$(VERSION)-1_source.changes: $(PACKAGE_FILE) $(PACKAGE_ORIG_FILE) debian/copyright
@@ -86,14 +89,20 @@ $(PACKAGE_ORIG_FILE): $(PACKAGE_FILE)
 debian/copyright: LICENSE.txt
 	cp "$<" "$@"
 
+.PHONY: deb-clean
 deb-clean:
 	-debian/rules clean
 	-rm -f *.build *.changes *.dsc *.debian.tar.gz *.orig.tar.bz2
 	-rm -rf $(PACKAGE_DIR)
 	-rm -f debian/copyright
 
+.PHONY: deb-deploy
 deb-deploy: jumpapp_$(VERSION)-1_source.changes
 	dput ppa:mkropat/ppa "$<"
+
+ubuntu-%:
+	vagrant up ubuntu
+	vagrant ssh -c 'cd /vagrant; make $*' ubuntu
 
 
 ### make rpm ###
@@ -107,3 +116,7 @@ rpm: $(PACKAGE_FILE)
 	rpmbuild -ba ~/rpmbuild/SPECS/jumpapp.spec
 	mv ~/rpmbuild/RPMS/noarch/jumpapp-$(VERSION)-1.*.noarch.rpm .
 	mv ~/rpmbuild/SRPMS/jumpapp-$(VERSION)-1.*.src.rpm .
+
+fedora-%:
+	vagrant up fedora
+	vagrant ssh -c 'cd /vagrant; make $*' fedora
