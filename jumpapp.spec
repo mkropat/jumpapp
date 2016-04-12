@@ -35,6 +35,11 @@ mkdir -p %{buildroot}%{_unitdir}
 %{_mandir}/man1/*
 
 %changelog
+* Tue Apr 12 2016 Michael Kropat <mail@michael.kropat.name> - 0.8-1
+- Jump to last-focused window when switching applications
+- Add `-t` title-matching option
+- Add `-w` workspace-matching option
+
 * Thu Mar 28 2014 Michael Kropat <mail@michael.kropat.name> - 0.2-1
 - Window Cycling feature
 

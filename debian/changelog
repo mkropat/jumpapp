@@ -1,3 +1,11 @@
+jumpapp (0.8-1) trusty; urgency=low
+
+  * Jump to last-focused window when switching applications
+  * Add `-t` title-matching option
+  * Add `-w` workspace-matching option
+
+ -- Michael Kropat <mail@michael.kropat.name>  Tue, 12 Apr 2016 01:08:55 +0000
+
 jumpapp (0.7-1) trusty; urgency=low
 
   * Handle multiple _NET_WM_WINDOW_TYPE values
