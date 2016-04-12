@@ -100,6 +100,10 @@ deb-clean:
 deb-deploy: jumpapp_$(VERSION)-1_source.changes
 	dput ppa:mkropat/ppa "$<"
 
+ubuntu-%:
+	vagrant up ubuntu
+	vagrant ssh -c 'cd /vagrant; make $*' ubuntu
+
 
 ### make rpm ###
 
@@ -112,3 +116,7 @@ rpm: $(PACKAGE_FILE)
 	rpmbuild -ba ~/rpmbuild/SPECS/jumpapp.spec
 	mv ~/rpmbuild/RPMS/noarch/jumpapp-$(VERSION)-1.*.noarch.rpm .
 	mv ~/rpmbuild/SRPMS/jumpapp-$(VERSION)-1.*.src.rpm .
+
+fedora-%:
+	vagrant up fedora
+	vagrant ssh -c 'cd /vagrant; make $*' fedora
