@@ -109,7 +109,7 @@ where_workspace_matches() {
 
 where_title_matches() {
     while read -r windowid hostname pid workspace class title; do
-      if [[ "$matching_title" == '' || "$title" =~ "$matching_title" ]]; then
+      if [[ "$matching_title" == '' || "$title" =~ $matching_title ]]; then
           printf '%s\n' "$windowid $hostname $pid $workspace $class $title"
       fi
     done
