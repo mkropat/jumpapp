@@ -35,12 +35,15 @@ mkdir -p %{buildroot}%{_unitdir}
 %{_mandir}/man1/*
 
 %changelog
+* Sat Mar 4 2017 Michael Kropat <mail@michael.kropat.name> - 0.9-1
+- Make `-t` support regex matching
+
 * Tue Apr 12 2016 Michael Kropat <mail@michael.kropat.name> - 0.8-1
 - Jump to last-focused window when switching applications
 - Add `-t` title-matching option
 - Add `-w` workspace-matching option
 
-* Thu Mar 28 2014 Michael Kropat <mail@michael.kropat.name> - 0.2-1
+* Fri Mar 28 2014 Michael Kropat <mail@michael.kropat.name> - 0.2-1
 - Window Cycling feature
 
 * Thu Mar 27 2014 Michael Kropat <mail@michael.kropat.name> - 0.1-1

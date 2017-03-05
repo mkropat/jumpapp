@@ -1,3 +1,9 @@
+jumpapp (0.9-1) xenial; urgency=low
+
+  * Make `-t` support regex matching
+
+ -- Michael Kropat <mail@michael.kropat.name>  Sat, 04 Mar 2017 23:14:00 +0000
+
 jumpapp (0.8-1) trusty; urgency=low
 
   * Jump to last-focused window when switching applications
