@@ -174,12 +174,12 @@ it_calls_activate_window_with_first_windowid_when_second_is_active_and_r_flag_is
     assertEquals 456 "$activate_window_arg"
 }
 
-it_calls_activate_window_with_windowid_that_matches_title_passed_with_-t() {
-    list_windows_output='456 somehost 123 -1 someapp some window lowercase
+it_calls_activate_window_with_windowid_that_matches_regex_title_passed_with_-t() {
+    list_windows_output='456 somehost 123 -1 someapp not the window
                          567 somehost 123 -1 someapp Some window and text
                          678 somehost 123 -1 someapp'
 
-    main -t "Some window" someapp
+    main -t "[Ss]ome window" someapp
 
     assertNotNull 'activate_window() called' "$activate_window_called"
     assertEquals 567 "$activate_window_arg"
