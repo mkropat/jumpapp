@@ -57,6 +57,9 @@ In short, **jumpapp** is probably the fastest way for a keyboard-junkie to switc
     cd jumpapp
     make rpm
     sudo yum localinstall jumpapp*.noarch.rpm
+    
+### Arch linux and Friends
+    yaourt -S aur/jumpapp-git
 
 ### From Source
 
