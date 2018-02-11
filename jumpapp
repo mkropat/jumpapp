@@ -214,19 +214,11 @@ get_matching_window_from_list() {
     local window_list=${@:2}
 
     for window in ${window_list[@]}; do
-        if numerically_equal $window_to_search_for $window; then
+        if [[ $window_to_search_for -eq $window ]]; then
             printf '%s\n' $window
             return
         fi
     done
-}
-
-numerically_equal() {
-    if [[ $(($1)) == $(($2)) ]]; then
-        return 0
-    else
-        return 1
-    fi
 }
 
 reverse_words() {
