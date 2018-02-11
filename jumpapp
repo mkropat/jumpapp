@@ -226,7 +226,11 @@ get_matching_window_from_list() {
 }
 
 reverse_words() {
-    awk '{ for (i=NF; i>1; i--) printf("%s ",$i); print $1; }'
+    local i words
+    IFS=' ' read -ra words
+    for ((i=${#words}; i>=0; i--)); do
+        printf '%s ' "${words[i]}"
+    done
 }
 
 get_prev_window() {
@@ -346,7 +350,9 @@ get_active_windowid() {
 }
 
 list_stacking_order() {
-    xprop -root | grep '^_NET_CLIENT_LIST_STACKING' | cut -d '#' -f2- | tr ',' ' '
+    local name ids
+    read -r name ids < <(xprop -root ' $0+\n' _NET_CLIENT_LIST_STACKING)
+    printf '%s\n' "$ids" | tr ',' ' '
 }
 
 get_window_types() {
