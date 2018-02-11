@@ -28,7 +28,7 @@ README.man.md: README.md
 .PHONY: check test
 check: test
 test:
-	-shellcheck --exclude=SC2016,SC2034 jumpapp jumpappify-desktop-entry
+	-shellcheck --exclude=SC2016,SC2034 jumpappify-desktop-entry
 	-checkbashisms jumpappify-desktop-entry
 	t/test_jumpapp
 
