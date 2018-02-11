@@ -166,6 +166,10 @@ print_windows() {
 }
 
 get_subsequent_window() {
+    _get_subsequent_window "$@" | head -1
+}
+
+_get_subsequent_window() {
     if [[ -n $in_reverse ]]; then
         get_oldest_focused_window "$@"
         get_prev_window "$@"
@@ -223,10 +227,6 @@ numerically_equal() {
     else
         return 1
     fi
-}
-
-list_stacking_order() {
-    xprop -root | grep '^_NET_CLIENT_LIST_STACKING' | cut -d '#' -f2- | tr ',' ' '
 }
 
 reverse_words() {
@@ -333,6 +333,10 @@ get_active_windowid() {
     printf '%s\n' "$windowid"
 }
 
+list_stacking_order() {
+    xprop -root | grep '^_NET_CLIENT_LIST_STACKING' | cut -d '#' -f2- | tr ',' ' '
+}
+
 get_window_types() {
     local name window_types
     read -r name window_types < <(xprop -id "$1" ' $0+\n' _NET_WM_WINDOW_TYPE)
@@ -351,11 +355,10 @@ get_active_workspace() {
 }
 
 activate_window() {
-    WID=$( echo "$1" | head -1 )
-    wmctrl -i -a "$WID"
+    wmctrl -i -a "$1"
     if [ -n "$mouse_center" ]; then
         # move cursor to middle of application
-        xdotool mousemove -w "$WID" $(wmctrl -lG | grep "$WID" | awk '{ print $5/2 " " $6/2 }')
+        xdotool mousemove -w "$1" $(wmctrl -lG | grep "$1" | awk '{ print $5/2 " " $6/2 }')
     fi
 }
 

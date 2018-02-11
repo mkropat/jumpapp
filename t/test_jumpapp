@@ -133,6 +133,7 @@ it_calls_activate_window_when_window_class_matches_with_different_case() {
 
 it_calls_activate_window_with_second_windowid_when_first_is_active() {
     active_windowid=456
+    list_stacking_order_output='999 456 999'
     list_windows_output='456 somehost 123 -1 someapp
                          567 somehost 123 -1 someapp'
     main someapp
@@ -150,6 +151,19 @@ it_calls_activate_window_with_first_windowid_when_last_is_active() {
 
     assertNotNull 'activate_window() called' "$activate_window_called"
     assertEquals 456 "$activate_window_arg"
+}
+
+it_calls_activate_window_with_rightmost_matching_windowid_in_list_stacking_order_when_active_window_isnt_in_list_stacking_order() {
+    active_windowid=000
+    list_stacking_order_output='999 456 789 999'
+    list_windows_output='456 somehost 123 -1 someapp
+                         567 somehost 123 -1 someapp
+                         678 somehost 123 -1 someapp
+                         789 somehost 123 -1 someapp'
+    main someapp
+
+    assertNotNull 'activate_window() called' "$activate_window_called"
+    assertEquals 789 "$activate_window_arg"
 }
 
 it_calls_activate_window_with_last_windowid_when_first_is_active_and_r_flag_is_passed() {
@@ -172,6 +186,31 @@ it_calls_activate_window_with_first_windowid_when_second_is_active_and_r_flag_is
 
     assertNotNull 'activate_window() called' "$activate_window_called"
     assertEquals 456 "$activate_window_arg"
+}
+
+it_calls_activate_window_with_leftmost_matching_windowid_in_list_stacking_order_when_active_window_isnt_in_list_stacking_order() {
+    active_windowid=000
+    list_stacking_order_output='999 567 678 999'
+    list_windows_output='456 somehost 123 -1 someapp
+                         567 somehost 123 -1 someapp
+                         678 somehost 123 -1 someapp
+                         789 somehost 123 -1 someapp'
+    main -r someapp
+
+    assertNotNull 'activate_window() called' "$activate_window_called"
+    assertEquals 567 "$activate_window_arg"
+}
+
+it_matches_list_stacking_order_windowids_by_numeric_comparison() {
+    active_windowid=000
+    list_stacking_order_output='999 0xff 999'
+    list_windows_output='456 somehost 123 -1 someapp
+                         255 somehost 123 -1 someapp
+                         678 somehost 123 -1 someapp'
+    main someapp
+
+    assertNotNull 'activate_window() called' "$activate_window_called"
+    assertEquals 255 "$activate_window_arg"
 }
 
 it_calls_activate_window_with_windowid_that_matches_regex_title_passed_with_-t() {
@@ -287,77 +326,6 @@ it_prints_matching_windows_when_called_with_-L() {
     [[ "$output" == *"678 somehost 123 -1 someapp: SomeApp Window #2"* ]] || fail 'Output does not list Window #2'
 }
 
-it_reverses_words() {
-    local output=$(echo dog lazy the over jumps fox brown quick The | reverse_words)
-    assertEquals 'Reverse_words needs to produce a phrase "The quick brown fox jumps over the lazy dog"' \
-                 'The quick brown fox jumps over the lazy dog' "$output"
-}
-
-it_compares_hexes_numerically() {
-    numerically_equal "0x0000f" "0xf"
-    assertTrue '0x0000f should be the same as 0xf (numerically)' $?
-
-    numerically_equal "0xdeadbeef" "0xff"
-    assertFalse '0xdeadbeef should NOT be the same as 0xf (numerically)' $?
-}
-
-it_gets_the_matching_window_id_from_list() {
-    local window_to_search_for=0x00eface
-    local window_list=(0x1200003 0x5000001 0x4200045 0x1000004 0x3200041 0x460017f 0x460017c 0x32064c5 0x400004 0xeface)
-
-    local output=$(get_matching_window_from_list ${window_to_search_for} ${window_list[@]})
-    assertEquals 'A matching window id that is numerically equal to "0x00eface" needs to be found in the provided window id list' \
-                 '0xeface' ${output}
-}
-
-it_gets_the_matching_window_id_from_list_with_no_result() {
-    local window_to_search_for=0xdeadbeef
-    local window_list=(0x1200003 0x5000001 0x4200045 0x1000004 0x3200041 0x460017f 0x460017c 0x32064c5 0x400004 0xe00004)
-
-    assertNull 'get_matching_window_from_list should NOT have found a window id called "0xdeadbeef" in the list' \
-               "$(get_matching_window_from_list ${window_to_search_for} ${window_list[@]})"
-}
-
-it_gets_most_recently_focused_windows_in_order() {
-    local matched_unordered_windows='0x0bad 0x0c0de 0x0d00d'
-    local expected_order=$(printf '%s\n%s\n%s\n' 0x0c0de 0x0d00d 0x0bad)
-    list_stacking_order_output='0x1200003 0xbad 0xd00d 0x1000004 0xc0de 0x460017f 0x460017c 0x32064c5 0x400004 0xe00004'
-
-    assertEquals 'Orders matched windows by when the window was last focused (most recent focused windows)' \
-                 "${expected_order}" "$(get_most_recently_focused_window ${matched_unordered_windows})"
-}
-
-it_gets_oldest_focused_windows_in_order() {
-    local matched_unordered_windows='0x0bad 0x0c0de 0x0d00d'
-    local expected_order=$(printf '%s\n%s\n%s\n' 0x0bad 0x0d00d 0x0c0de)
-    list_stacking_order_output='0x1200003 0xbad 0xd00d 0x1000004 0xc0de 0x460017f 0x460017c 0x32064c5 0x400004 0xe00004'
-
-    assertEquals 'Orders matched windows by when the window was first focused (oldest focused windows)' \
-                 "${expected_order}" "$(get_oldest_focused_window ${matched_unordered_windows})"
-}
-
-it_ignores_stacking_order_when_active_window_is_present_in_get_most_recently_focused_windows_in_order() {
-    active_windowid=0
-
-    local matched_unordered_windows='0x0bad 0x0c0de 0x0d00d 0x0'
-    local expected_order=''
-    list_stacking_order_output='0xc0de 0x1200003 0xd00d 0x1000004 0x460017f 0x460017c 0x32064c5 0x400004 0xe00004 0xbad'
-
-    assertEquals 'Do nothing to enable fallback to default cycling through when one of the matched windows in already active' \
-                 "${expected_order}" "$(get_most_recently_focused_window ${matched_unordered_windows})"
-}
-
-it_ignores_stacking_order_when_active_window_is_present_in_get_oldest_focused_windows_in_order() {
-    active_windowid=0
-
-    local matched_unordered_windows='0x0bad 0x0c0de 0x0d00d 0x0'
-    local expected_order=''
-    list_stacking_order_output='0xc0de 0x1200003 0xd00d 0x1000004 0x460017f 0x460017c 0x32064c5 0x400004 0xe00004 0xbad'
-
-    assertEquals 'Do nothing to enable fallback to default cycling through when one of the matched windows in already active' \
-                 "${expected_order}" "$(get_oldest_focused_window ${matched_unordered_windows})"
-}
-
 ##### Test Doubles #####
 
 source ./jumpapp # load app now, so we can override it
@@ -415,7 +383,7 @@ die() {
 }
 
 list_stacking_order() {
-    echo ${list_stacking_order_output}
+    printf '%s\n' "$list_stacking_order_output"
 }
 
 ##### Test Harness #####
