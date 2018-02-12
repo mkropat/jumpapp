@@ -17,14 +17,15 @@ Options:
   -t NAME -- process window has to have NAME as the window title
   -c NAME -- find window using NAME as WM_CLASS (instead of COMMAND)
   -i NAME -- find process using NAME as the command name (instead of COMMAND)
-  -w -- only find the applications in the current workspace"
+  -w -- only find the applications in the current workspace
+  -C -- center cursor when raising application"
 }
 
 main() {
-    local classid cmdid force fork=1 list passthrough in_reverse matching_title workspace_filter
+    local classid cmdid force fork=1 list passthrough in_reverse matching_title workspace_filter mouse_center
 
     local OPTIND
-    while getopts c:fhi:Lnprt:w opt; do
+    while getopts c:fhi:Lnprt:wC opt; do
         case "$opt" in
             c) classid="$OPTARG" ;;
             f) force=1 ;;
@@ -36,6 +37,7 @@ main() {
             r) in_reverse=1 ;;
             t) matching_title="$OPTARG"; force=1 ;;
             w) workspace_filter="$(get_active_workspace)"; force=1 ;;
+            C) mouse_center=1 ;;
         esac
     done
     shift $(( OPTIND - 1 ))
@@ -55,6 +57,10 @@ main() {
 check_for_prerequisites() {
     if ! has_command wmctrl; then
         die 'Error: wmctrl(1) can not be found. Please install it to continue.'
+    fi &&
+
+    if [[ -n "$mouse_center" ]] && ! has_command xdotool; then
+        die 'Error: xdotool(1) can not be found. Please install it to use "-C".'
     fi
 }
 
@@ -76,8 +82,13 @@ jumpapp() {
       printf 'Matched Windows [%d]\n' ${#windowids[@]}
       list_matching_windows "$classid" "${pids[@]}" | print_windows
     elif (( ${#windowids[@]} )) && ! needs_passthrough "$@"; then
-        activate_window "$(get_subsequent_window "${windowids[@]}")" ||
+        local window=$(get_subsequent_window "${windowids[@]}")
+        activate_window "$window" ||
             die "Error: unable to focus window for '$cmdid'"
+
+        if [[ -n "$mouse_center" ]]; then
+            center_cursor "$window"
+        fi
     else
         if (( ${#pids[@]} )) && [[ -z "$force" ]]; then
             die "Error: found running process for '$cmdid', but found no window to jump to"
@@ -164,42 +175,41 @@ print_windows() {
 }
 
 get_subsequent_window() {
+    _get_subsequent_window "$@" | head -1
+}
+
+_get_subsequent_window() {
+    local active_window=$(get_active_windowid)
+
+    if ! is_num_in_array "$active_window" "$@"; then
+        if [[ -n $in_reverse ]]; then
+            get_oldest_focused_window "$@"
+        else
+            get_most_recently_focused_window "$@"
+        fi
+    fi
+
+    # always return a window here too in case the window manager doesn't return stacking order
     if [[ -n $in_reverse ]]; then
-        get_oldest_focused_window "$@"
-        get_prev_window "$@"
-	else
-        get_most_recently_focused_window "$@"
-        get_next_window "$@"
+        get_prev_window "$active_window" "$@"
+    else
+        get_next_window "$active_window" "$@"
     fi
 }
 
 get_oldest_focused_window() {
-    local unordered_windows=($@)
     local windows_in_stacking_order=($(list_stacking_order))
-    local active_window=$(get_active_windowid)
-
-    local active_window_matches=($(get_matching_window_from_list ${active_window} ${unordered_windows[@]}))
-    if [[ ${#active_window_matches[@]} -gt 0 ]]; then
-        return
-    fi
 
     for window in ${windows_in_stacking_order[@]}; do
-        get_matching_window_from_list $window ${unordered_windows[@]}
+        get_matching_window_from_list $window "$@"
     done
 }
 
 get_most_recently_focused_window() {
-    local unordered_windows=($@)
     local windows_in_stacking_order=($(list_stacking_order | reverse_words))
-    local active_window=$(get_active_windowid)
-
-    local active_window_matches=($(get_matching_window_from_list ${active_window} ${unordered_windows[@]}))
-    if [[ -n ${active_window_matches[@]} ]]; then
-        return
-    fi
 
     for window in ${windows_in_stacking_order[@]}; do
-        get_matching_window_from_list $window ${unordered_windows[@]}
+        get_matching_window_from_list $window "$@"
     done
 }
 
@@ -208,31 +218,24 @@ get_matching_window_from_list() {
     local window_list=${@:2}
 
     for window in ${window_list[@]}; do
-        if numerically_equal $window_to_search_for $window; then
+        if [[ $window_to_search_for -eq $window ]]; then
             printf '%s\n' $window
             return
         fi
     done
 }
 
-numerically_equal() {
-    if [[ $(($1)) == $(($2)) ]]; then
-        return 0
-    else
-        return 1
-    fi
-}
-
-list_stacking_order() {
-    xprop -root | grep '^_NET_CLIENT_LIST_STACKING' | cut -d '#' -f2- | tr ',' ' '
-}
-
 reverse_words() {
-    awk '{ for (i=NF; i>1; i--) printf("%s ",$i); print $1; }'
+    local i words
+    IFS=' ' read -ra words
+    for ((i=${#words}; i>=0; i--)); do
+        printf '%s ' "${words[i]}"
+    done
 }
 
 get_prev_window() {
-    local active=$(get_active_windowid) prev
+    local active=$1 prev
+    shift
 
     if (( $1 == active )); then
         shift $(( $# - 1 ))
@@ -248,9 +251,11 @@ get_prev_window() {
 }
 
 get_next_window() {
+    local active=$1
+    shift
+
     local first=$1
 
-    local active=$(get_active_windowid)
     while [[ "$1" ]] && (( $1 != active )); do
         shift
     done
@@ -277,6 +282,19 @@ launch_command() {
 
 basename() {
     printf '%s\n' "${1##*/}"
+}
+
+is_num_in_array() {
+    local element num=$1
+    shift
+
+    for element; do
+        if [[ $num -eq $element ]]; then
+            return 0
+        fi
+    done
+
+    return 1
 }
 
 equals_case_insensitive() {
@@ -331,6 +349,12 @@ get_active_windowid() {
     printf '%s\n' "$windowid"
 }
 
+list_stacking_order() {
+    local name ids
+    read -r name ids < <(xprop -root ' $0+\n' _NET_CLIENT_LIST_STACKING)
+    printf '%s\n' "$ids" | tr ',' ' '
+}
+
 get_window_types() {
     local name window_types
     read -r name window_types < <(xprop -id "$1" ' $0+\n' _NET_WM_WINDOW_TYPE)
@@ -350,6 +374,10 @@ get_active_workspace() {
 
 activate_window() {
     wmctrl -i -a "$1"
+}
+
+center_cursor() {
+    xdotool mousemove -w "$1" $(wmctrl -lG | grep "$1" | awk '{ print $5/2 " " $6/2 }')
 }
 
 has_command() {
