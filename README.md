@@ -33,7 +33,7 @@ In short, **jumpapp** is probably the fastest way for a keyboard-junkie to switc
       -c NAME -- find window using NAME as WM_CLASS (instead of COMMAND)
       -i NAME -- find process using NAME as the command name (instead of COMMAND)
       -w -- only find the applications in the current workspace
-      -m -- move cursor to the middle of raising application (xdotool needed)
+      -C -- center cursor when raising application
 
 ## Installation
 

@@ -18,14 +18,14 @@ Options:
   -c NAME -- find window using NAME as WM_CLASS (instead of COMMAND)
   -i NAME -- find process using NAME as the command name (instead of COMMAND)
   -w -- only find the applications in the current workspace
-  -m -- move cursor to the middle of raising application"
+  -C -- center cursor when raising application"
 }
 
 main() {
     local classid cmdid force fork=1 list passthrough in_reverse matching_title workspace_filter mouse_center
 
     local OPTIND
-    while getopts c:fhi:Lnprt:wm opt; do
+    while getopts c:fhi:Lnprt:wC opt; do
         case "$opt" in
             c) classid="$OPTARG" ;;
             f) force=1 ;;
@@ -37,7 +37,7 @@ main() {
             r) in_reverse=1 ;;
             t) matching_title="$OPTARG"; force=1 ;;
             w) workspace_filter="$(get_active_workspace)"; force=1 ;;
-            m) mouse_center=1 ;;
+            C) mouse_center=1 ;;
         esac
     done
     shift $(( OPTIND - 1 ))
@@ -60,7 +60,7 @@ check_for_prerequisites() {
     fi &&
 
     if [[ -n "$mouse_center" ]] && ! has_command xdotool; then
-        die 'Error: xdotool(1) can not be found. Please install it to use "-m".'
+        die 'Error: xdotool(1) can not be found. Please install it to use "-C".'
     fi
 }
 

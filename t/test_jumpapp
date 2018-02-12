@@ -285,11 +285,11 @@ it_calls_activate_window_with_second_windowid_when_first_is_not_normal() {
     :
 }
 
-it_calls_center_cursor_on_window_when_-m_is_passed() {
+it_calls_center_cursor_on_window_when_-C_is_passed() {
     list_pids_for_command_output='123'
     list_windows_output='456 somehost 123 -1 some-class'
 
-    main -m someapp
+    main -C someapp
 
     assertNotNull 'center_cursor() called' "$center_cursor_called"
     assertEquals 456 "$center_cursor_arg"
