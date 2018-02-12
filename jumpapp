@@ -18,7 +18,7 @@ Options:
   -c NAME -- find window using NAME as WM_CLASS (instead of COMMAND)
   -i NAME -- find process using NAME as the command name (instead of COMMAND)
   -w -- only find the applications in the current workspace
-  -m -- move cursor to the middle of raising application (xdotool needed)"
+  -m -- move cursor to the middle of raising application"
 }
 
 main() {
@@ -57,6 +57,10 @@ main() {
 check_for_prerequisites() {
     if ! has_command wmctrl; then
         die 'Error: wmctrl(1) can not be found. Please install it to continue.'
+    fi &&
+
+    if [[ -n "$mouse_center" ]] && ! has_command xdotool; then
+        die 'Error: xdotool(1) can not be found. Please install it to use "-m".'
     fi
 }
 
