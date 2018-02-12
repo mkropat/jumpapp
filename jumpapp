@@ -78,8 +78,13 @@ jumpapp() {
       printf 'Matched Windows [%d]\n' ${#windowids[@]}
       list_matching_windows "$classid" "${pids[@]}" | print_windows
     elif (( ${#windowids[@]} )) && ! needs_passthrough "$@"; then
-        activate_window "$(get_subsequent_window "${windowids[@]}")" ||
+        local window=$(get_subsequent_window "${windowids[@]}")
+        activate_window "$window" ||
             die "Error: unable to focus window for '$cmdid'"
+
+        if [[ -n "$mouse_center" ]]; then
+            center_cursor "$window"
+        fi
     else
         if (( ${#pids[@]} )) && [[ -z "$force" ]]; then
             die "Error: found running process for '$cmdid', but found no window to jump to"
@@ -359,10 +364,10 @@ get_active_workspace() {
 
 activate_window() {
     wmctrl -i -a "$1"
-    if [ -n "$mouse_center" ]; then
-        # move cursor to middle of application
-        xdotool mousemove -w "$1" $(wmctrl -lG | grep "$1" | awk '{ print $5/2 " " $6/2 }')
-    fi
+}
+
+center_cursor() {
+    xdotool mousemove -w "$1" $(wmctrl -lG | grep "$1" | awk '{ print $5/2 " " $6/2 }')
 }
 
 has_command() {

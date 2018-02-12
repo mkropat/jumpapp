@@ -10,6 +10,8 @@ setUp() {
 
     activate_window_called=
     activate_window_arg=
+    center_cursor_called=
+    center_cursor_arg=
     die_called=
     exec_command_called=
     focus_window_by_class_called=
@@ -283,6 +285,16 @@ it_calls_activate_window_with_second_windowid_when_first_is_not_normal() {
     :
 }
 
+it_calls_center_cursor_on_window_when_-m_is_passed() {
+    list_pids_for_command_output='123'
+    list_windows_output='456 somehost 123 -1 some-class'
+
+    main -m someapp
+
+    assertNotNull 'center_cursor() called' "$center_cursor_called"
+    assertEquals 456 "$center_cursor_arg"
+}
+
 it_calls_list_pids_for_command_without_the_full_path() {
     list_pids_for_command_cmd_file=$(mktemp)
     main /usr/bin/someapp >/dev/null
@@ -367,6 +379,11 @@ activate_window() {
     activate_window_called=1
     activate_window_arg=$1
     return 0
+}
+
+center_cursor() {
+    center_cursor_called=1
+    center_cursor_arg=$1
 }
 
 has_command() {
