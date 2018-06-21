@@ -228,7 +228,7 @@ get_matching_window_from_list() {
 reverse_words() {
     local i words
     IFS=' ' read -ra words
-    for ((i=${#words}; i>=0; i--)); do
+    for ((i=${#words[@]}; i>=0; i--)); do
         printf '%s ' "${words[i]}"
     done
 }
