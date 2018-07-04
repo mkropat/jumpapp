@@ -35,6 +35,10 @@ mkdir -p %{buildroot}%{_unitdir}
 %{_mandir}/man1/*
 
 %changelog
+* Mon Jul 2 2018 Michael Kropat <mail@michael.kropat.name> - 1.0-1
+- Add -C option to center mouse
+- Fix stacking order bug with >10 windows
+
 * Sat Mar 4 2017 Michael Kropat <mail@michael.kropat.name> - 0.9-1
 - Make `-t` support regex matching
 

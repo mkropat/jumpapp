@@ -1,3 +1,10 @@
+jumpapp (1.0-1) xenial; urgency=low
+
+  * Add -C option to center mouse
+  * Fix stacking order bug with >10 windows
+
+ -- Michael Kropat <mail@michael.kropat.name>  Mon, 02 Jul 2018 17:47:18 -0400
+
 jumpapp (0.9-1) xenial; urgency=low
 
   * Make `-t` support regex matching
