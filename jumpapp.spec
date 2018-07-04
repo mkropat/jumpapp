@@ -3,7 +3,7 @@
 # Created with: rpmdev-newspec jumpapp
 
 Name:           jumpapp
-Version:        %{VERSION}
+Version:        VERSION
 Release:        1%{?dist}
 Summary:        jump to another application, unconditionally
 

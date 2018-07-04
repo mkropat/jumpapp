@@ -112,7 +112,7 @@ rpm: $(PACKAGE_FILE)
 	@hash rpmbuild 2>/dev/null || { echo "ERROR: can't find rpmbuild. Did you run \`yum install @development-tools\`?" >&2; exit 1; }
 	@test -d "$$HOME/rpmbuild" || { echo "ERROR: ~/rpmbuild does not exist. Did you run \`rpmdev-setuptree\`?" >&2; exit 1; }
 	cp "$<" ~/rpmbuild/SOURCES/
-	sed s/%{VERSION}/$(VERSION)/ jumpapp.spec >~/rpmbuild/SPECS/jumpapp.spec
+	sed s/VERSION/$(VERSION)/ jumpapp.spec >~/rpmbuild/SPECS/jumpapp.spec
 	rpmbuild -ba ~/rpmbuild/SPECS/jumpapp.spec
 	mv ~/rpmbuild/RPMS/noarch/jumpapp-$(VERSION)-1.*.noarch.rpm .
 	mv ~/rpmbuild/SRPMS/jumpapp-$(VERSION)-1.*.src.rpm .
