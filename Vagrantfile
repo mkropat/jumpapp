@@ -21,6 +21,9 @@ Vagrant.configure(2) do |config|
   config.vm.define 'ubuntu' do |ubuntu|
     ubuntu.vm.box = 'ubuntu/bionic64'
     ubuntu.vm.provision 'shell', inline: provision_ubuntu
+    ubuntu.vm.provider "virtualbox" do |v|
+      v.customize [ "modifyvm", :id, "--uartmode1", "disconnected" ]
+    end
   end
 
   config.vm.define 'fedora' do |fedora|
