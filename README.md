@@ -37,13 +37,7 @@ In short, **jumpapp** is probably the fastest way for a keyboard-junkie to switc
 
 ## Installation
 
-### Ubuntu and Linux Mint
-
-    sudo add-apt-repository ppa:mkropat/ppa
-    sudo apt-get update
-    sudo apt-get install jumpapp
-
-### Debian and Friends
+### Ubuntu, Debian and Friends
 
     sudo apt-get install build-essential debhelper pandoc shunit2
     git clone https://github.com/mkropat/jumpapp.git
