@@ -87,8 +87,13 @@ jumpapp() {
       list_matching_windows "$classid" "${pids[@]}" | print_windows
     elif (( ${#windowids[@]} )) && ! needs_passthrough "$@"; then
         local window=$(get_subsequent_window "${windowids[@]}")
-        activate_window "$window" ||
-            die "Error: unable to focus window for '$cmdid'"
+        if [[ -n "$keep_workspace" ]]; then
+            keep_workspace_activate_window "$window" ||
+                die "Error: unable to focus window for '$cmdid'"
+        else
+            change_workspace_activate_window "$window" ||
+                die "Error: unable to focus window for '$cmdid'"
+        fi
 
         if [[ -n "$mouse_center" ]]; then
             center_cursor "$window"
@@ -376,12 +381,12 @@ get_active_workspace() {
     done < <(wmctrl -d)
 }
 
-activate_window() {
-    if [[ -n "$keep_workspace" ]]; then
-        wmctrl -i -R "$1"
-    else
-        wmctrl -i -a "$1"
-    fi
+change_workspace_activate_window() {
+    wmctrl -i -a "$1"
+}
+
+keep_workspace_activate_window() {
+    wmctrl -i -R "$1"
 }
 
 center_cursor() {
