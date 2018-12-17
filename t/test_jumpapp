@@ -8,6 +8,7 @@ setUp() {
 
     has_command_val=0
 
+    change_workspace_activate_window_called=
     keep_workspace_activate_window_called=
     activate_window_called=
     activate_window_arg=
@@ -85,12 +86,25 @@ it_calls_activate_window_when_window_found_by_pid() {
     assertNull 'fork_command() not called' "$fork_command_called"
 }
 
+it_calls_change_workspace_activate_window_when_-R_is_not_passed() {
+    list_pids_for_command_output='123'
+    list_windows_output='456 somehost 123 -1 some-class'
+
+    main someapp
+
+    assertNull 'keep_workspace_activate_window() not called' "$keep_workspace_activate_window_called"
+    assertNotNull 'change_workspace_activate_window() called' "$change_workspace_activate_window_called"
+    assertEquals 456 "$activate_window_arg"
+    assertNull 'fork_command() not called' "$fork_command_called"
+}
+
 it_calls_keep_workspace_activate_window_when_-R_is_passed() {
     list_pids_for_command_output='123'
     list_windows_output='456 somehost 123 -1 some-class'
 
     main -R someapp
 
+    assertNull 'change_workspace_activate_window() not called' "$change_workspace_activate_window_called"
     assertNotNull 'keep_workspace_activate_window() called' "$keep_workspace_activate_window_called"
     assertEquals 456 "$activate_window_arg"
     assertNull 'fork_command() not called' "$fork_command_called"
@@ -388,6 +402,7 @@ get_active_workspace() {
 }
 
 change_workspace_activate_window() {
+    change_workspace_activate_window_called=1
     activate_window_called=1
     activate_window_arg=$1
     return 0
