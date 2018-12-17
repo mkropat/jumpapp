@@ -18,6 +18,9 @@ Options:
   -c NAME -- find window using NAME as WM_CLASS (instead of COMMAND)
   -i NAME -- find process using NAME as the command name (instead of COMMAND)
   -w -- only find the applications in the current workspace
+  -R -- bring the application to the current workspace when raising
+        (the default behaviour is to switch to the workspace that the
+        application is currently on)
   -C -- center cursor when raising application"
 }
 
@@ -25,7 +28,7 @@ main() {
     local classid cmdid force fork=1 list passthrough in_reverse matching_title workspace_filter mouse_center
 
     local OPTIND
-    while getopts c:fhi:Lnprt:wC opt; do
+    while getopts c:fhi:Lnprt:wRC opt; do
         case "$opt" in
             c) classid="$OPTARG" ;;
             f) force=1 ;;
@@ -37,6 +40,7 @@ main() {
             r) in_reverse=1 ;;
             t) matching_title="$OPTARG"; force=1 ;;
             w) workspace_filter="$(get_active_workspace)"; force=1 ;;
+            R) keep_workspace=1 ;;
             C) mouse_center=1 ;;
         esac
     done
@@ -83,8 +87,13 @@ jumpapp() {
       list_matching_windows "$classid" "${pids[@]}" | print_windows
     elif (( ${#windowids[@]} )) && ! needs_passthrough "$@"; then
         local window=$(get_subsequent_window "${windowids[@]}")
-        activate_window "$window" ||
-            die "Error: unable to focus window for '$cmdid'"
+        if [[ -n "$keep_workspace" ]]; then
+            keep_workspace_activate_window "$window" ||
+                die "Error: unable to focus window for '$cmdid'"
+        else
+            change_workspace_activate_window "$window" ||
+                die "Error: unable to focus window for '$cmdid'"
+        fi
 
         if [[ -n "$mouse_center" ]]; then
             center_cursor "$window"
@@ -372,8 +381,12 @@ get_active_workspace() {
     done < <(wmctrl -d)
 }
 
-activate_window() {
+change_workspace_activate_window() {
     wmctrl -i -a "$1"
+}
+
+keep_workspace_activate_window() {
+    wmctrl -i -R "$1"
 }
 
 center_cursor() {
