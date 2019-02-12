@@ -139,4 +139,4 @@ Example `.xbindkeysrc`:
 ## See Also
 
 - [Blazing-Fast Application Switching in Linux](https://vickychijwani.me/blazing-fast-application-switching-in-linux/) — a blog post that talks about the advantages of this style of application switching
-- [brocket](https://github.com/dmikalova/brocket) — a Bash script that works very similiarly to **jumpapp**. Check it out, particularly if you're looking for options for managing windows in different desktops.
+- [brocket](https://gitlab.com/dmikalova/brocket) — a Bash script that works very similiarly to **jumpapp**. Check it out, particularly if you're looking for options for managing windows in different desktops.
