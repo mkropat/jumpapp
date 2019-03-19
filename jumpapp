@@ -29,7 +29,7 @@ main() {
     local classid cmdid force fork=1 list passthrough focusOrMinimize in_reverse matching_title workspace_filter mouse_center
 
     local OPTIND
-    while getopts c:fhi:Lmnprt:w opt; do
+    while getopts c:fhi:Lmnprt:wRC opt; do
         case "$opt" in
             c) classid="$OPTARG" ;;
             f) force=1 ;;
@@ -84,19 +84,12 @@ jumpapp() {
       $(list_matching_windows "$classid" "${pids[@]}" | select_windowid)
     )
 
-    if [[ -n "$focusOrMinimize" ]]; then
-     if [[ ${#windowids[@]} -eq "1" ]]; then
-      	if [[ "$(get_active_windowid)" -eq "${windowids[0]}" ]]; then
-      	echo "zde"
-      	echo $(get_active_windowid)
-	  wmctrl -i -r $(get_active_windowid) -b toggle,shaded
-	fi
-      fi
-    fi
-
     if [[ -n "$list" ]]; then
       printf 'Matched Windows [%d]\n' ${#windowids[@]}
       list_matching_windows "$classid" "${pids[@]}" | print_windows
+    elif [[ -n "$focusOrMinimize" ]] && [[ ${#windowids[@]} -eq "1" ]] \
+         && [[ "$(get_active_windowid)" -eq "${windowids[0]}" ]]; then
+        xdotool getactivewindow windowminimize
     elif (( ${#windowids[@]} )) && ! needs_passthrough "$@"; then
         local window=$(get_subsequent_window "${windowids[@]}")
         if [[ -n "$keep_workspace" ]]; then
