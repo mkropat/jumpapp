@@ -89,7 +89,7 @@ jumpapp() {
       list_matching_windows "$classid" "${pids[@]}" | print_windows
     elif [[ -n "$focusOrMinimize" ]] && [[ ${#windowids[@]} -eq "1" ]] \
          && [[ "$(get_active_windowid)" -eq "${windowids[0]}" ]]; then
-        xdotool getactivewindow windowminimize
+        minimize_active_window
     elif (( ${#windowids[@]} )) && ! needs_passthrough "$@"; then
         local window=$(get_subsequent_window "${windowids[@]}")
         if [[ -n "$keep_workspace" ]]; then
@@ -396,6 +396,10 @@ keep_workspace_activate_window() {
 
 center_cursor() {
     xdotool mousemove -w "$1" $(wmctrl -lG | grep "$1" | awk '{ print $5/2 " " $6/2 }')
+}
+
+minimize_active_window() {
+    xdotool getactivewindow windowminimize
 }
 
 has_command() {
