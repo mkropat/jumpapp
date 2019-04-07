@@ -14,6 +14,7 @@ setUp() {
     activate_window_arg=
     center_cursor_called=
     center_cursor_arg=
+    minimize_active_window_called=
     die_called=
     exec_command_called=
     focus_window_by_class_called=
@@ -364,6 +365,26 @@ it_prints_matching_windows_when_called_with_-L() {
     [[ "$output" == *"678 somehost 123 -1 someapp: SomeApp Window #2"* ]] || fail 'Output does not list Window #2'
 }
 
+it_calls_minimize_active_window_when_called_with_-m_and_window_is_active() {
+    active_windowid=456
+    list_windows_output='456 somehost 123 -1 someapp
+                         567 somehost 234 -1 anotherapp AnotherApp Window'
+    main -m someapp
+
+    assertNotNull 'minimize_active_window() called' "$minimize_active_window_called"
+}
+
+it_calls_activate_window_when_called_with_-m_but_the_window_is_not_active() {
+    active_windowid=567
+    list_windows_output='456 somehost 123 -1 someapp
+                         567 somehost 234 -1 anotherapp AnotherApp Window'
+    main -m someapp
+
+    assertNull 'minimize_active_window() not called' "$minimize_active_window_called"
+    assertNotNull 'i() called' "$activate_window_called"
+    assertEquals 456 "$activate_window_arg"
+}
+
 ##### Test Doubles #####
 
 source ./jumpapp # load app now, so we can override it
@@ -418,6 +439,10 @@ keep_workspace_activate_window() {
 center_cursor() {
     center_cursor_called=1
     center_cursor_arg=$1
+}
+
+minimize_active_window() {
+    minimize_active_window_called=1
 }
 
 has_command() {

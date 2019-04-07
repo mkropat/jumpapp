@@ -10,6 +10,7 @@ Otherwise, launch COMMAND (with opitonal ARGs) to start the application.
 Options:
   -r -- cycle through windows in reverse order
   -f -- force COMMAND to launch if process found but no windows found
+  -m -- if a single window is already open and in focus - minimize it
   -n -- do not fork into background when launching COMMAND
   -p -- always launch COMMAND when ARGs passed
         (see Argument Passthrough in man page)
@@ -25,16 +26,17 @@ Options:
 }
 
 main() {
-    local classid cmdid force fork=1 list passthrough in_reverse matching_title workspace_filter mouse_center
+    local classid cmdid force fork=1 list passthrough focusOrMinimize in_reverse matching_title workspace_filter mouse_center
 
     local OPTIND
-    while getopts c:fhi:Lnprt:wRC opt; do
+    while getopts c:fhi:Lmnprt:wRC opt; do
         case "$opt" in
             c) classid="$OPTARG" ;;
             f) force=1 ;;
             h) show_usage; exit 0 ;;
             i) cmdid="$OPTARG" ;;
             L) list=1 ;;
+            m) focusOrMinimize=1 ;;
             n) fork='' ;;
             p) passthrough=1; force=1 ;; # passthrough implies force
             r) in_reverse=1 ;;
@@ -85,6 +87,9 @@ jumpapp() {
     if [[ -n "$list" ]]; then
       printf 'Matched Windows [%d]\n' ${#windowids[@]}
       list_matching_windows "$classid" "${pids[@]}" | print_windows
+    elif [[ -n "$focusOrMinimize" ]] && [[ ${#windowids[@]} -eq "1" ]] \
+         && [[ "$(get_active_windowid)" -eq "${windowids[0]}" ]]; then
+        minimize_active_window
     elif (( ${#windowids[@]} )) && ! needs_passthrough "$@"; then
         local window=$(get_subsequent_window "${windowids[@]}")
         if [[ -n "$keep_workspace" ]]; then
@@ -391,6 +396,10 @@ keep_workspace_activate_window() {
 
 center_cursor() {
     xdotool mousemove -w "$1" $(wmctrl -lG | grep "$1" | awk '{ print $5/2 " " $6/2 }')
+}
+
+minimize_active_window() {
+    xdotool getactivewindow windowminimize
 }
 
 has_command() {
