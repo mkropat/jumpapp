@@ -284,14 +284,47 @@ it_calls_activate_window_with_windowid_where_workspace_is_-1_when_-w_passed() {
     assertEquals 567 "$activate_window_arg"
 }
 
-it_throws_an_error_when_process_is_running_but_window_type_is_not_normal() {
+it_throws_an_error_when_process_is_running_but_all_window_type_are_known_not_normal_windows() {
     list_pids_for_command_output='123'
     list_windows_output='456 somehost 123 -1 someapp'
-    get_window_types_output=_NET_WM_WINDOW_TYPE_DESKTOP
+    get_window_types_output='_NET_WM_WINDOW_TYPE_DESKTOP, _NET_WM_WINDOW_TYPE_DOCK, _NET_WM_WINDOW_TYPE_TOOLBAR'
 
     main someapp >/dev/null
 
     assertNotNull 'die() called' "$die_called"
+}
+
+it_calls_activate_window_when_get_window_types_returns_normal_window() {
+    get_window_types_output='_NET_WM_WINDOW_TYPE_NORMAL'
+    list_pids_for_command_output='123'
+    list_windows_output='456 somehost 123 -1 some-class'
+
+    main someapp
+
+    assertNotNull 'activate_window() called' "$activate_window_called"
+    assertEquals 456 "$activate_window_arg"
+}
+
+it_calls_activate_window_when_get_window_types_returns_dialog_window() {
+    get_window_types_output='_NET_WM_WINDOW_TYPE_NORMAL'
+    list_pids_for_command_output='123'
+    list_windows_output='456 somehost 123 -1 some-class'
+
+    main someapp
+
+    assertNotNull 'activate_window() called' "$activate_window_called"
+    assertEquals 456 "$activate_window_arg"
+}
+
+it_calls_activate_window_when_get_window_types_returns_unknown_window_type() {
+    get_window_types_output='_NET_WM_WINDOW_TYPE_DERP'
+    list_pids_for_command_output='123'
+    list_windows_output='456 somehost 123 -1 some-class'
+
+    main someapp
+
+    assertNotNull 'activate_window() called' "$activate_window_called"
+    assertEquals 456 "$activate_window_arg"
 }
 
 it_calls_activate_window_when_get_window_types_returns_multiple_entires() {
