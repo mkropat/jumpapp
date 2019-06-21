@@ -1,3 +1,10 @@
+jumpapp (1.1-1) bionic; urgency=medium
+
+  * Add -m option to toggle window visibility
+  * Change window-type filter logic to work better with Slack
+
+ -- Michael Kropat <mail@michael.kropat.name>  Thu, 20 Jun 2019 22:22:57 -0400
+
 jumpapp (1.0-1) xenial; urgency=low
 
   * Add -C option to center mouse

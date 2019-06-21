@@ -19,7 +19,7 @@ EOF
 
 Vagrant.configure(2) do |config|
   config.vm.define 'ubuntu' do |ubuntu|
-    ubuntu.vm.box = 'ubuntu/bionic64'
+    ubuntu.vm.box = 'ubuntu/xenial64'
     ubuntu.vm.provision 'shell', inline: provision_ubuntu
   end
 

@@ -25,6 +25,7 @@ In short, **jumpapp** is probably the fastest way for a keyboard-junkie to switc
     Options:
       -r -- cycle through windows in reverse order
       -f -- force COMMAND to launch if process found but no windows found
+      -m -- if a single window is already open and in focus - minimize it
       -n -- do not fork into background when launching COMMAND
       -p -- always launch COMMAND when ARGs passed
             (see Argument Passthrough in man page)

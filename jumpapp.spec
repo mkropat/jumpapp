@@ -35,6 +35,10 @@ mkdir -p %{buildroot}%{_unitdir}
 %{_mandir}/man1/*
 
 %changelog
+* Wed Jun 20 2019 Michael Kropat <mail@michael.kropat.name> - 1.1-1
+- Add -m option to toggle window visibility
+- Change window-type filter logic to work better with Slack
+
 * Mon Jul 2 2018 Michael Kropat <mail@michael.kropat.name> - 1.0-1
 - Add -C option to center mouse
 - Fix stacking order bug with >10 windows
