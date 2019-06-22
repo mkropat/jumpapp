@@ -152,7 +152,7 @@ where_class_or_pid_matches() {
             printf '%s\n' "$windowid $hostname $pid $workspace $class $title"
             continue
         fi
-        if equals_case_insensitive "$hostname" "$local_hostname"; then
+        if equals_case_insensitive "$hostname" "$local_hostname" || [[ "$hostname" == "N/A" ]]; then
             for target_pid in "$@"; do
                 if (( pid == target_pid )); then
                     printf '%s\n' "$windowid $hostname $pid $workspace $class $title"
