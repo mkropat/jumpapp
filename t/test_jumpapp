@@ -123,6 +123,18 @@ it_calls_activate_window_only_on_local_windows_when_window_found_by_pid() {
     assertNull 'fork_command() not called' "$fork_command_called"
 }
 
+it_calls_activate_window_on_windows_missing_hostname_when_window_found_by_pid() {
+    list_pids_for_command_output='123'
+    list_windows_output='456 otherhost 123 -1 some-class
+                         567 N/A 123 -1 some-class'
+
+    main someapp
+
+    assertNotNull 'activate_window() called' "$activate_window_called"
+    assertEquals 567 "$activate_window_arg"
+    assertNull 'fork_command() not called' "$fork_command_called"
+}
+
 it_calls_activate_window_when_multiple_pids_exist() {
     list_pids_for_command_output='1 2 3 123'
     list_windows_output='456 somehost 123 -1 Some-class'
@@ -142,8 +154,8 @@ it_calls_activate_window_when_window_found_by_class() {
     assertNull 'fork_command() not called' "$fork_command_called"
 }
 
-it_calls_activate_window_when_window_found_by_class_and_hostname_is_not_set() {
-    list_windows_output='456 N/A 123 -1 someapp'
+it_calls_activate_window_when_window_found_by_class_and_hostname_is_for_another_machine() {
+    list_windows_output='456 otherhost 123 -1 someapp'
 
     main someapp
 
