@@ -137,7 +137,8 @@ Example `.xbindkeysrc`:
             jumpappify-desktop-entry "$entry" >"$target"
         done
 
-## See Also
+## Continue On Your Path To Keyboard Nirvana
 
 - [Blazing-Fast Application Switching in Linux](https://vickychijwani.me/blazing-fast-application-switching-in-linux/) — a blog post that talks about the advantages of this style of application switching
-- [brocket](https://gitlab.com/dmikalova/brocket) — a Bash script that works very similiarly to **jumpapp**. Check it out, particularly if you're looking for options for managing windows in different desktops.
+- [Saka Key](https://key.saka.io/docs/about/introduction) / [Tridactyl](https://github.com/tridactyl/tridactyl) — navigate the web with your keyboard
+- [Vim](https://www.vim.org/) / [Neovim](https://neovim.io/) — the granddaddy of keyboard driven programs
