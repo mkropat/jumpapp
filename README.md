@@ -85,12 +85,12 @@ behave normally.
 ## A Wrapper Around wmctrl(1)
 
 All the heavy lifting is done by Tomáš Stýblo's powerful
-[**wmctrl**](http://tomas.styblo.name/wmctrl/). You must have it installed to
+[**wmctrl**](http://tripie.sweb.cz/utils/wmctrl/). You must have it installed to
 use **jumpapp**.
 
 **jumpapp** was built for the GNOME desktop environment. There's a good chance
 though that it'll work on [any window manager supported by
-**wmctrl**](http://tomas.styblo.name/wmctrl/#about).
+**wmctrl**](http://tripie.sweb.cz/utils/wmctrl/#about).
 
 ## XBindKeys
 
