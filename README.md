@@ -143,3 +143,8 @@ Example `.xbindkeysrc`:
 - [Blazing-Fast Application Switching in Linux](https://vickychijwani.me/blazing-fast-application-switching-in-linux/) — a blog post that talks about the advantages of this style of application switching
 - [Saka Key](https://key.saka.io/docs/about/introduction) / [Tridactyl](https://github.com/tridactyl/tridactyl) — navigate the web with your keyboard
 - [Vim](https://www.vim.org/) / [Neovim](https://neovim.io/) — the granddaddy of keyboard driven programs
+
+## Uninstall jumpapp
+
+### Ubuntu, Debian and Friends
+    sudo apt remove jumpapp
