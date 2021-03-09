@@ -379,7 +379,7 @@ get_active_windowid() {
 list_stacking_order() {
     local name ids
     read -r name ids < <(xprop -root ' $0+\n' _NET_CLIENT_LIST_STACKING)
-    if [[ "$ids" == 'not found.' ]]; then
+    if [[ "$ids" == 'not found.' ]] || [[ "$ids" =~ 'no such atom' ]]; then
         # in case the window manager doesn't support _NET_CLIENT_LIST_STACKING (p.e. dwm)
         read -r name ids < <(xprop -root ' $0+\n' _NET_CLIENT_LIST)
     fi
