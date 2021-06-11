@@ -338,18 +338,6 @@ equals_case_insensitive() {
 #     confusingly include all arguments in argv[0] (I'm looking at you
 #     chromium-browser).
 list_pids_for_command() {
-    if has_command pgrep; then
-        list_pids_for_command_with_pgrep "$@"
-    else
-        list_pids_for_command_from_procfs "$@"
-    fi
-}
-
-list_pids_for_command_with_pgrep() {
-    pgrep -f "^(/.*/)?$1\b"
-}
-
-list_pids_for_command_from_procfs() {
     local cmd_argv0
     for path in /proc/*/cmdline; do
         read -rd '' cmd_argv0 <"$path"
