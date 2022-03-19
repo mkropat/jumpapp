@@ -35,6 +35,9 @@ mkdir -p %{buildroot}%{_unitdir}
 %{_mandir}/man1/*
 
 %changelog
+* Wed Mar 18 2022 Michael Kropat <mail@michael.kropat.name> - 1.2-1
+- Add fallback for non-stacking window managers
+
 * Wed Jun 20 2019 Michael Kropat <mail@michael.kropat.name> - 1.1-1
 - Add -m option to toggle window visibility
 - Change window-type filter logic to work better with Slack
