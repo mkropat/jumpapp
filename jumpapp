@@ -4,7 +4,7 @@ show_usage() {
     local cmd=$(basename "${BASH_SOURCE[0]}")
     echo "Usage: $cmd [OPTION]... COMMAND [ARG]...
 
-Jump to (focus) the first open window for an application, if it's running.
+Jump to (focus) the existing window for an application, if it's running.
 Otherwise, launch COMMAND (with opitonal ARGs) to start the application.
 
 Options:
