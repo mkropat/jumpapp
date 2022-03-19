@@ -1,3 +1,9 @@
+jumpapp (1.2-1) focal; urgency=low
+
+  * Add fallback for non-stacking window managers
+
+ -- Michael Kropat <mail@michael.kropat.name>  Fri, 18 Mar 2022 21:44:27 -0400
+
 jumpapp (1.1-1) bionic; urgency=medium
 
   * Add -m option to toggle window visibility
