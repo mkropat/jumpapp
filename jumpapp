@@ -366,6 +366,7 @@ list_pids_for_command_from_procfs() {
 list_windows() {
     local windowid workspace pid wm_class hostname title
     while read -r windowid workspace pid wm_class hostname title; do
+        [[ "$title" == "N/A" ]] && title=$(xprop -id $windowid WM_NAME)
         printf '%s\n' "$windowid $hostname $pid $workspace ${wm_class##*.} $title"
     done < <(wmctrl -lpx)
 }
