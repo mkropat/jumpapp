@@ -4,7 +4,7 @@ show_usage() {
     local cmd=$(basename "${BASH_SOURCE[0]}")
     echo "Usage: $cmd [OPTION]... COMMAND [ARG]...
 
-Jump to (focus) the existing window for an application, if it's running.
+Jump to (focus) the first open window for an application, if it's running.
 Otherwise, launch COMMAND (with opitonal ARGs) to start the application.
 
 Options:
@@ -12,6 +12,7 @@ Options:
   -f -- force COMMAND to launch if process found but no windows found
   -m -- if a single window is already open and in focus - minimize it
   -n -- do not fork into background when launching COMMAND
+  -N -- don't launch if no window is found
   -p -- always launch COMMAND when ARGs passed
         (see Argument Passthrough in man page)
   -L -- list matching windows for COMMAND and quit
@@ -26,10 +27,10 @@ Options:
 }
 
 main() {
-    local classid cmdid force fork=1 list passthrough focusOrMinimize in_reverse matching_title workspace_filter mouse_center
+    local classid cmdid force fork=1 list passthrough focusOrMinimize in_reverse matching_title workspace_filter mouse_center no_launch
 
     local OPTIND
-    while getopts c:fhi:Lmnprt:wRC opt; do
+    while getopts c:fhi:LmnNprt:wRC opt; do
         case "$opt" in
             c) classid="$OPTARG" ;;
             f) force=1 ;;
@@ -38,6 +39,7 @@ main() {
             L) list=1 ;;
             m) focusOrMinimize=1 ;;
             n) fork='' ;;
+            N) no_launch=1; ;;
             p) passthrough=1; force=1 ;; # passthrough implies force
             r) in_reverse=1 ;;
             t) matching_title="$OPTARG"; force=1 ;;
@@ -103,6 +105,8 @@ jumpapp() {
         if [[ -n "$mouse_center" ]]; then
             center_cursor "$window"
         fi
+    elif [[ -n "$no_launch" ]] && [[ ${#windowids[@]} -eq "0" ]]; then
+        die "Not launching because the -N was given and no window was found for '$cmdid'"
     else
         if (( ${#pids[@]} )) && [[ -z "$force" ]]; then
             die "Error: found running process for '$cmdid', but found no window to jump to"
