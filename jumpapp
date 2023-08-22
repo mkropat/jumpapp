@@ -106,7 +106,7 @@ jumpapp() {
             center_cursor "$window"
         fi
     elif [[ -n "$no_launch" ]] && [[ ${#windowids[@]} -eq "0" ]]; then
-        die "Not launching because the -N was given and no window was found for '$cmdid'"
+        die "Not launching because the -N flag was given and no window was found for '$cmdid'"
     else
         if (( ${#pids[@]} )) && [[ -z "$force" ]]; then
             die "Error: found running process for '$cmdid', but found no window to jump to"

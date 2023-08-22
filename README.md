@@ -7,7 +7,7 @@
 The idea is simple — bind a key for any given application that will:
 
 - launch the application, if it's not already running, or
-- focus the application's most recently opened window, if it is running
+- focus the application's most recently opened window, if it is running.
 
 Pressing the key again will cycle to the application's next window, if there's more than one.
 
@@ -20,13 +20,14 @@ In short, **jumpapp** is probably the fastest way for a keyboard-junkie to switc
     Usage: jumpapp [OPTION]... COMMAND [ARG]...
 
     Jump to (focus) the existing window for an application, if it's running.
-    Otherwise, launch COMMAND (with opitonal ARGs) to start the application.
+    Otherwise, launch COMMAND (with optional ARGs) to start the application.
 
     Options:
       -r -- cycle through windows in reverse order
       -f -- force COMMAND to launch if process found but no windows found
       -m -- if a single window is already open and in focus - minimize it
       -n -- do not fork into background when launching COMMAND
+      -N -- don't launch if no window is found
       -p -- always launch COMMAND when ARGs passed
             (see Argument Passthrough in man page)
       -L -- list matching windows for COMMAND and quit
