@@ -63,6 +63,8 @@ main() {
 }
 
 empty_line_before_eof() {
+    # Make sure that the last line is empty.
+    # The command will append a newline at EOF only if necessary.
     sed -e '/.$/a\' "$@"
 }
 
