@@ -377,10 +377,12 @@ list_pids_for_command_from_procfs() {
 #   Column spec: windowid hostname pid workspace class
 #   Where 'class' is the second WM_CLASS string (http://tronche.com/gui/x/icccm/sec-4.html#WM_CLASS)
 list_windows() {
-    local windowid workspace pid wm_class hostname title
-    while read -r windowid workspace pid wm_class hostname title; do
-        printf '%s\n' "$(join_words "$windowid" "$hostname" "$pid" "$workspace" "${wm_class##*.}" "$title")"
-    done < <(wmctrl -lpx)
+    local windowid workspace pid class hostname title
+    while read -r windowid workspace pid hostname title; do
+        class="$(xprop -id "$windowid" ' $0+\n' WM_CLASS |
+                 sed -E -e 's/^.*", "(.*)"$/\1/' -e 's/[\\]"/"/g')"
+        printf '%s\n' "$(join_words "$windowid" "$hostname" "$pid" "$workspace" "$class" "$title")"
+    done < <(wmctrl -lp)
 }
 
 get_active_windowid() {
