@@ -62,6 +62,10 @@ main() {
     jumpapp "$@"
 }
 
+empty_line_before_eof() {
+    sed -e '/.$/a\' "$@"
+}
+
 check_for_prerequisites() {
     if ! has_command wmctrl; then
         die 'Error: wmctrl(1) can not be found. Please install it to continue.'
@@ -82,13 +86,14 @@ jumpapp() {
     fi
 
     local pids=( $(list_pids_for_command "$cmdid") )
+    matching_windows="$(list_matching_windows "$classid" "${pids[@]}")"
     local windowids=(
-      $(list_matching_windows "$classid" "${pids[@]}" | select_windowid)
+      $(printf %s "$matching_windows" | empty_line_before_eof | select_windowid)
     )
 
     if [[ -n "$list" ]]; then
       printf 'Matched Windows [%d]\n' ${#windowids[@]}
-      list_matching_windows "$classid" "${pids[@]}" | print_windows
+      printf %s "$matching_windows" | empty_line_before_eof | print_windows
     elif [[ -n "$focusOrMinimize" ]] && [[ ${#windowids[@]} -eq "1" ]] \
          && [[ "$(get_active_windowid)" -eq "${windowids[0]}" ]]; then
         minimize_active_window
