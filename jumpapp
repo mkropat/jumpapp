@@ -62,6 +62,15 @@ main() {
     jumpapp "$@"
 }
 
+SEP=$'\t'
+
+function join_words {
+    local first=${1-}
+    if shift; then
+        printf %s "$first" "${@/#/$SEP}"
+    fi
+}
+
 check_for_prerequisites() {
     if ! has_command wmctrl; then
         die 'Error: wmctrl(1) can not be found. Please install it to continue.'
@@ -129,18 +138,18 @@ list_matching_windows() {
 }
 
 where_workspace_matches() {
-    while read -r windowid hostname pid workspace class title; do
+    while IFS="$SEP" read -r windowid hostname pid workspace class title; do
         if [[ -z "$workspace_filter" ]] || [[ "$workspace_filter" == "$workspace" ]] || [[ "$workspace" -lt 0 ]]; then
-            printf '%s\n' "$windowid $hostname $pid $workspace $class $title"
+            printf '%s\n' "$(join_words "$windowid" "$hostname" "$pid" "$workspace" "$class" "$title")"
         fi
     done
 }
 
 where_title_matches() {
-    while read -r windowid hostname pid workspace class title; do
-      if [[ "$matching_title" == '' || "$title" =~ $matching_title ]]; then
-          printf '%s\n' "$windowid $hostname $pid $workspace $class $title"
-      fi
+    while IFS="$SEP" read -r windowid hostname pid workspace class title; do
+        if [[ "$matching_title" == '' || "$title" =~ $matching_title ]]; then
+            printf '%s\n' "$(join_words "$windowid" "$hostname" "$pid" "$workspace" "$class" "$title")"
+        fi
     done
 }
 
@@ -151,15 +160,15 @@ where_class_or_pid_matches() {
     local local_hostname=$(get_hostname)
 
     local windowid hostname pid workspace class title
-    while read -r windowid hostname pid workspace class title; do
+    while IFS="$SEP" read -r windowid hostname pid workspace class title; do
         if equals_case_insensitive "$class" "$target_class"; then
-            printf '%s\n' "$windowid $hostname $pid $workspace $class $title"
+            printf '%s\n' "$(join_words "$windowid" "$hostname" "$pid" "$workspace" "$class" "$title")"
             continue
         fi
         if equals_case_insensitive "$hostname" "$local_hostname" || [[ "$hostname" == "N/A" ]]; then
             for target_pid in "$@"; do
                 if (( pid == target_pid )); then
-                    printf '%s\n' "$windowid $hostname $pid $workspace $class $title"
+                    printf '%s\n' "$(join_words "$windowid" "$hostname" "$pid" "$workspace" "$class" "$title")"
                     continue 2
                 fi
             done
@@ -169,7 +178,7 @@ where_class_or_pid_matches() {
 
 where_normal_window() {
     local windowid rest
-    while read -r windowid rest; do
+    while IFS="$SEP" read -r windowid rest; do
         case "$(get_window_types "$windowid")" in \
             *_NET_WM_WINDOW_TYPE_DESKTOP* |       \
             *_NET_WM_WINDOW_TYPE_DOCK* |          \
@@ -185,7 +194,7 @@ where_normal_window() {
             *_NET_WM_WINDOW_TYPE_DND*)
                 ;;
             *)
-                printf '%s\n' "$windowid $rest"
+                printf '%s\n' "$(join_words "$windowid" "$rest")"
                 ;;
         esac
     done
@@ -193,14 +202,14 @@ where_normal_window() {
 
 select_windowid() {
     local windowid rest
-    while read -r windowid rest; do
+    while IFS="$SEP" read -r windowid rest; do
         printf '%s\n' "$windowid"
     done
 }
 
 print_windows() {
     local windowid hostname pid workspace class title
-    while read -r windowid hostname pid workspace class title; do
+    while IFS="$SEP" read -r windowid hostname pid workspace class title; do
         printf '%s: %s\n' "$windowid $hostname $pid $workspace $class" "$title"
     done
 }
@@ -370,7 +379,7 @@ list_pids_for_command_from_procfs() {
 list_windows() {
     local windowid workspace pid wm_class hostname title
     while read -r windowid workspace pid wm_class hostname title; do
-        printf '%s\n' "$windowid $hostname $pid $workspace ${wm_class##*.} $title"
+        printf '%s\n' "$(join_words "$windowid" "$hostname" "$pid" "$workspace" "${wm_class##*.}" "$title")"
     done < <(wmctrl -lpx)
 }
 
