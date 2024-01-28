@@ -1,2 +1,8 @@
 .vagrant/
 debian/copyright
+jumpapp*.changes
+jumpapp*.deb
+jumpapp*.rpm
+jumpapp*.tar.bz2
+jumpapp.1
+README.man.md
