@@ -21,6 +21,14 @@ setUp() {
     fork_command_called=
 }
 
+function join_lines {
+    local first=${1-}
+    local line_feed=$'\n'
+    if shift; then
+        printf %s "$first" "${@/#/$line_feed}"
+    fi
+}
+
 it_echoes_help_when_run_with_0_args() {
     local output=$(main)
     [[ "$output" == Usage:*  ]] || fail 'Output does not begin with "Usage:"'
@@ -78,7 +86,7 @@ it_calls_fork_command_when_called_with_dash_f_and_process_is_running_but_no_wind
 
 it_calls_activate_window_when_window_found_by_pid() {
     list_pids_for_command_output='123'
-    list_windows_output='456 somehost 123 -1 some-class'
+    list_windows_output="$(join_words '456' 'somehost' '123' '-1' 'some-class')"
 
     main someapp
 
@@ -89,7 +97,7 @@ it_calls_activate_window_when_window_found_by_pid() {
 
 it_calls_change_workspace_activate_window_when_-R_is_not_passed() {
     list_pids_for_command_output='123'
-    list_windows_output='456 somehost 123 -1 some-class'
+    list_windows_output="$(join_words '456' 'somehost' '123' '-1' 'some-class')"
 
     main someapp
 
@@ -101,7 +109,7 @@ it_calls_change_workspace_activate_window_when_-R_is_not_passed() {
 
 it_calls_keep_workspace_activate_window_when_-R_is_passed() {
     list_pids_for_command_output='123'
-    list_windows_output='456 somehost 123 -1 some-class'
+    list_windows_output="$(join_words '456' 'somehost' '123' '-1' 'some-class')"
 
     main -R someapp
 
@@ -113,8 +121,10 @@ it_calls_keep_workspace_activate_window_when_-R_is_passed() {
 
 it_calls_activate_window_only_on_local_windows_when_window_found_by_pid() {
     list_pids_for_command_output='123'
-    list_windows_output='456 otherhost 123 -1 some-class
-                         567 somehost 123 -1 some-class'
+    list_windows_output="$(join_lines \
+        "$(join_words '456' 'otherhost' '123' '-1' 'some-class')" \
+        "$(join_words '567' 'somehost' '123' '-1' 'some-class')" \
+    )"
 
     main someapp
 
@@ -125,8 +135,10 @@ it_calls_activate_window_only_on_local_windows_when_window_found_by_pid() {
 
 it_calls_activate_window_on_windows_missing_hostname_when_window_found_by_pid() {
     list_pids_for_command_output='123'
-    list_windows_output='456 otherhost 123 -1 some-class
-                         567 N/A 123 -1 some-class'
+    list_windows_output="$(join_lines \
+        "$(join_words '456' 'otherhost' '123' '-1' 'some-class')" \
+        "$(join_words '567' 'N/A' '123' '-1' 'some-class')" \
+    )"
 
     main someapp
 
@@ -137,7 +149,7 @@ it_calls_activate_window_on_windows_missing_hostname_when_window_found_by_pid() 
 
 it_calls_activate_window_when_multiple_pids_exist() {
     list_pids_for_command_output='1 2 3 123'
-    list_windows_output='456 somehost 123 -1 Some-class'
+    list_windows_output="$(join_words '456' 'somehost' '123' '-1' 'Some-class')"
 
     main someapp
 
@@ -146,7 +158,7 @@ it_calls_activate_window_when_multiple_pids_exist() {
 }
 
 it_calls_activate_window_when_window_found_by_class() {
-    list_windows_output='456 somehost 123 -1 someapp'
+    list_windows_output="$(join_words '456' 'somehost' '123' '-1' 'someapp')"
 
     main someapp
 
@@ -155,7 +167,7 @@ it_calls_activate_window_when_window_found_by_class() {
 }
 
 it_calls_activate_window_when_window_found_by_class_and_hostname_is_for_another_machine() {
-    list_windows_output='456 otherhost 123 -1 someapp'
+    list_windows_output="$(join_words '456' 'otherhost' '123' '-1' 'someapp')"
 
     main someapp
 
@@ -164,7 +176,7 @@ it_calls_activate_window_when_window_found_by_class_and_hostname_is_for_another_
 }
 
 it_calls_activate_window_when_window_class_matches_with_different_case() {
-    list_windows_output='456 somehost 123 -1 SomeAPP'
+    list_windows_output="$(join_words '456' 'somehost' '123' '-1' 'SomeAPP')"
 
     main someapp
 
@@ -175,8 +187,10 @@ it_calls_activate_window_when_window_class_matches_with_different_case() {
 it_calls_activate_window_with_second_windowid_when_first_is_active() {
     active_windowid=456
     list_stacking_order_output='999 456 999'
-    list_windows_output='456 somehost 123 -1 someapp
-                         567 somehost 123 -1 someapp'
+    list_windows_output="$(join_lines \
+        "$(join_words '456' 'somehost' '123' '-1' 'someapp')" \
+        "$(join_words '567' 'somehost' '123' '-1' 'someapp')" \
+    )"
     main someapp
 
     assertNotNull 'activate_window() called' "$activate_window_called"
@@ -185,9 +199,11 @@ it_calls_activate_window_with_second_windowid_when_first_is_active() {
 
 it_calls_activate_window_with_first_windowid_when_last_is_active() {
     active_windowid=678
-    list_windows_output='456 somehost 123 -1 someapp
-                         567 somehost 123 -1 someapp
-                         678 somehost 123 -1 someapp'
+    list_windows_output="$(join_lines \
+        "$(join_words '456' 'somehost' '123' '-1' 'someapp')" \
+        "$(join_words '567' 'somehost' '123' '-1' 'someapp')" \
+        "$(join_words '678' 'somehost' '123' '-1' 'someapp')" \
+    )"
     main someapp
 
     assertNotNull 'activate_window() called' "$activate_window_called"
@@ -197,10 +213,12 @@ it_calls_activate_window_with_first_windowid_when_last_is_active() {
 it_calls_activate_window_with_rightmost_matching_windowid_in_list_stacking_order_when_active_window_isnt_in_list_stacking_order() {
     active_windowid=000
     list_stacking_order_output='999 456 789 999'
-    list_windows_output='456 somehost 123 -1 someapp
-                         567 somehost 123 -1 someapp
-                         678 somehost 123 -1 someapp
-                         789 somehost 123 -1 someapp'
+    list_windows_output="$(join_lines \
+        "$(join_words '456' 'somehost' '123' '-1' 'someapp')" \
+        "$(join_words '567' 'somehost' '123' '-1' 'someapp')" \
+        "$(join_words '678' 'somehost' '123' '-1' 'someapp')" \
+        "$(join_words '789' 'somehost' '123' '-1' 'someapp')" \
+    )"
     main someapp
 
     assertNotNull 'activate_window() called' "$activate_window_called"
@@ -209,9 +227,11 @@ it_calls_activate_window_with_rightmost_matching_windowid_in_list_stacking_order
 
 it_calls_activate_window_with_last_windowid_when_first_is_active_and_r_flag_is_passed() {
     active_windowid=456
-    list_windows_output='456 somehost 123 -1 someapp
-                         567 somehost 123 -1 someapp
-                         678 somehost 123 -1 someapp'
+    list_windows_output="$(join_lines \
+        "$(join_words '456' 'somehost' '123' '-1' 'someapp')" \
+        "$(join_words '567' 'somehost' '123' '-1' 'someapp')" \
+        "$(join_words '678' 'somehost' '123' '-1' 'someapp')" \
+    )"
     main -r someapp
 
     assertNotNull 'activate_window() called' "$activate_window_called"
@@ -220,9 +240,11 @@ it_calls_activate_window_with_last_windowid_when_first_is_active_and_r_flag_is_p
 
 it_calls_activate_window_with_first_windowid_when_second_is_active_and_r_flag_is_passed() {
     active_windowid=567
-    list_windows_output='456 somehost 123 -1 someapp
-                         567 somehost 123 -1 someapp
-                         678 somehost 123 -1 someapp'
+    list_windows_output="$(join_lines \
+        "$(join_words '456' 'somehost' '123' '-1' 'someapp')" \
+        "$(join_words '567' 'somehost' '123' '-1' 'someapp')" \
+        "$(join_words '678' 'somehost' '123' '-1' 'someapp')" \
+    )"
     main -r someapp
 
     assertNotNull 'activate_window() called' "$activate_window_called"
@@ -232,10 +254,12 @@ it_calls_activate_window_with_first_windowid_when_second_is_active_and_r_flag_is
 it_calls_activate_window_with_leftmost_matching_windowid_in_list_stacking_order_when_active_window_isnt_in_list_stacking_order() {
     active_windowid=000
     list_stacking_order_output='999 567 678 999'
-    list_windows_output='456 somehost 123 -1 someapp
-                         567 somehost 123 -1 someapp
-                         678 somehost 123 -1 someapp
-                         789 somehost 123 -1 someapp'
+    list_windows_output="$(join_lines \
+        "$(join_words '456' 'somehost' '123' '-1' 'someapp')" \
+        "$(join_words '567' 'somehost' '123' '-1' 'someapp')" \
+        "$(join_words '678' 'somehost' '123' '-1' 'someapp')" \
+        "$(join_words '789' 'somehost' '123' '-1' 'someapp')" \
+    )"
     main -r someapp
 
     assertNotNull 'activate_window() called' "$activate_window_called"
@@ -245,9 +269,11 @@ it_calls_activate_window_with_leftmost_matching_windowid_in_list_stacking_order_
 it_matches_list_stacking_order_windowids_by_numeric_comparison() {
     active_windowid=000
     list_stacking_order_output='999 0xff 999'
-    list_windows_output='456 somehost 123 -1 someapp
-                         255 somehost 123 -1 someapp
-                         678 somehost 123 -1 someapp'
+    list_windows_output="$(join_lines \
+        "$(join_words '456' 'somehost' '123' '-1' 'someapp')" \
+        "$(join_words '255' 'somehost' '123' '-1' 'someapp')" \
+        "$(join_words '678' 'somehost' '123' '-1' 'someapp')" \
+    )"
     main someapp
 
     assertNotNull 'activate_window() called' "$activate_window_called"
@@ -255,9 +281,11 @@ it_matches_list_stacking_order_windowids_by_numeric_comparison() {
 }
 
 it_calls_activate_window_with_windowid_that_matches_regex_title_passed_with_-t() {
-    list_windows_output='456 somehost 123 -1 someapp not the window
-                         567 somehost 123 -1 someapp Some window and text
-                         678 somehost 123 -1 someapp'
+    list_windows_output="$(join_lines \
+        "$(join_words '456' 'somehost' '123' '-1' 'someapp' 'not the window')" \
+        "$(join_words '567' 'somehost' '123' '-1' 'someapp' 'Some window and text')" \
+        "$(join_words '678' 'somehost' '123' '-1' 'someapp')" \
+    )"
 
     main -t "[Ss]ome window" someapp
 
@@ -276,9 +304,11 @@ it_calls_fork_command_if_no_matching_windows_but_matching_pids_and_title_passed_
 
 it_calls_activate_window_with_windowid_of_first_window_on_workspace_when_-w_passed() {
     active_workspace=1
-    list_windows_output='456 somehost 123 0 someapp
-                         567 somehost 123 1 someapp
-                         678 somehost 123 0 someapp'
+    list_windows_output="$(join_lines \
+        "$(join_words '456' 'somehost' '123' '0' 'someapp')" \
+        "$(join_words '567' 'somehost' '123' '1' 'someapp')" \
+        "$(join_words '678' 'somehost' '123' '0' 'someapp')" \
+    )"
     main -w someapp
 
     assertNotNull 'activate_window() called' "$activate_window_called"
@@ -287,9 +317,11 @@ it_calls_activate_window_with_windowid_of_first_window_on_workspace_when_-w_pass
 
 it_calls_activate_window_with_windowid_where_workspace_is_-1_when_-w_passed() {
     active_workspace=1
-    list_windows_output='456 somehost 123 0 someapp
-                         567 somehost 123 -1 someapp
-                         678 somehost 123 0 someapp'
+    list_windows_output="$(join_lines \
+        "$(join_words '456' 'somehost' '123' '0' 'someapp')" \
+        "$(join_words '567' 'somehost' '123' '-1' 'someapp')" \
+        "$(join_words '678' 'somehost' '123' '0' 'someapp')" \
+    )"
     main -w someapp
 
     assertNotNull 'activate_window() called' "$activate_window_called"
@@ -298,7 +330,7 @@ it_calls_activate_window_with_windowid_where_workspace_is_-1_when_-w_passed() {
 
 it_throws_an_error_when_process_is_running_but_all_window_type_are_known_not_normal_windows() {
     list_pids_for_command_output='123'
-    list_windows_output='456 somehost 123 -1 someapp'
+    list_windows_output="$(join_words '456' 'somehost' '123' '-1' 'someapp')"
     get_window_types_output='_NET_WM_WINDOW_TYPE_DESKTOP, _NET_WM_WINDOW_TYPE_DOCK, _NET_WM_WINDOW_TYPE_TOOLBAR'
 
     main someapp >/dev/null
@@ -309,7 +341,7 @@ it_throws_an_error_when_process_is_running_but_all_window_type_are_known_not_nor
 it_calls_activate_window_when_get_window_types_returns_normal_window() {
     get_window_types_output='_NET_WM_WINDOW_TYPE_NORMAL'
     list_pids_for_command_output='123'
-    list_windows_output='456 somehost 123 -1 some-class'
+    list_windows_output="$(join_words '456' 'somehost' '123' '-1' 'some-class')"
 
     main someapp
 
@@ -320,7 +352,7 @@ it_calls_activate_window_when_get_window_types_returns_normal_window() {
 it_calls_activate_window_when_get_window_types_returns_dialog_window() {
     get_window_types_output='_NET_WM_WINDOW_TYPE_NORMAL'
     list_pids_for_command_output='123'
-    list_windows_output='456 somehost 123 -1 some-class'
+    list_windows_output="$(join_words '456' 'somehost' '123' '-1' 'some-class')"
 
     main someapp
 
@@ -331,7 +363,7 @@ it_calls_activate_window_when_get_window_types_returns_dialog_window() {
 it_calls_activate_window_when_get_window_types_returns_unknown_window_type() {
     get_window_types_output='_NET_WM_WINDOW_TYPE_DERP'
     list_pids_for_command_output='123'
-    list_windows_output='456 somehost 123 -1 some-class'
+    list_windows_output="$(join_words '456' 'somehost' '123' '-1' 'some-class')"
 
     main someapp
 
@@ -342,7 +374,7 @@ it_calls_activate_window_when_get_window_types_returns_unknown_window_type() {
 it_calls_activate_window_when_get_window_types_returns_multiple_entires() {
     get_window_types_output='_NET_SOME_TYPE, _NET_WM_WINDOW_TYPE_NORMAL, _NET_ANOTHER_TYPE'
     list_pids_for_command_output='123'
-    list_windows_output='456 somehost 123 -1 some-class'
+    list_windows_output="$(join_words '456' 'somehost' '123' '-1' 'some-class')"
 
     main someapp
 
@@ -359,7 +391,7 @@ it_calls_activate_window_with_second_windowid_when_first_is_not_normal() {
 
 it_calls_center_cursor_on_window_when_-C_is_passed() {
     list_pids_for_command_output='123'
-    list_windows_output='456 somehost 123 -1 some-class'
+    list_windows_output="$(join_words '456' 'somehost' '123' '-1' 'some-class')"
 
     main -C someapp
 
@@ -375,7 +407,7 @@ it_calls_list_pids_for_command_without_the_full_path() {
 }
 
 it_calls_fork_command_if_-p_option_passed_and_a_command_argument_is_passed() {
-    list_windows_output='456 somehost 123 -1 someapp' # even if the application is already running
+    list_windows_output="$(join_words '456' 'somehost' '123' '-1' 'someapp')" # even if the application is already running
 
     main -p someapp somearg >/dev/null
 
@@ -391,18 +423,22 @@ it_prints_count_0_when_called_with_-L() {
 }
 
 it_prints_count_2_when_called_with_-L_and_2_match() {
-    list_windows_output='456 somehost 123 -1 someapp SomeApp Window #1
-                         567 somehost 234 -1 anotherapp AnotherApp Window
-                         678 somehost 123 -1 someapp SomeApp Window #2'
+    list_windows_output="$(join_lines \
+        "$(join_words '456' 'somehost' '123' '-1' 'someapp' 'SomeApp Window #1')" \
+        "$(join_words '567' 'somehost' '234' '-1' 'anotherapp' 'AnotherApp Window')" \
+        "$(join_words '678' 'somehost' '123' '-1' 'someapp' 'SomeApp Window #2')" \
+    )"
 
     local output=$(main -L someapp)
     [[ "$output" == "Matched Windows [2]"* ]] || fail 'Output does not start with "Matched Windows [2]"'
 }
 
 it_prints_matching_windows_when_called_with_-L() {
-    list_windows_output='456 somehost 123 -1 someapp SomeApp Window #1
-                         567 somehost 234 -1 anotherapp AnotherApp Window
-                         678 somehost 123 -1 someapp SomeApp Window #2'
+    list_windows_output="$(join_lines \
+        "$(join_words '456' 'somehost' '123' '-1' 'someapp' 'SomeApp Window #1')" \
+        "$(join_words '567' 'somehost' '234' '-1' 'anotherapp' 'AnotherApp Window')" \
+        "$(join_words '678' 'somehost' '123' '-1' 'someapp' 'SomeApp Window #2')" \
+    )"
 
     local output=$(main -L someapp)
     [[ "$output" == *"456 somehost 123 -1 someapp: SomeApp Window #1"* ]] || fail 'Output does not list Window #1'
@@ -412,8 +448,10 @@ it_prints_matching_windows_when_called_with_-L() {
 
 it_calls_minimize_active_window_when_called_with_-m_and_window_is_active() {
     active_windowid=456
-    list_windows_output='456 somehost 123 -1 someapp
-                         567 somehost 234 -1 anotherapp AnotherApp Window'
+    list_windows_output="$(join_lines \
+        "$(join_words '456' 'somehost' '123' '-1' 'someapp')" \
+        "$(join_words '567' 'somehost' '234' '-1' 'anotherapp' 'AnotherApp Window')" \
+    )"
     main -m someapp
 
     assertNotNull 'minimize_active_window() called' "$minimize_active_window_called"
@@ -421,8 +459,10 @@ it_calls_minimize_active_window_when_called_with_-m_and_window_is_active() {
 
 it_calls_activate_window_when_called_with_-m_but_the_window_is_not_active() {
     active_windowid=567
-    list_windows_output='456 somehost 123 -1 someapp
-                         567 somehost 234 -1 anotherapp AnotherApp Window'
+    list_windows_output="$(join_lines \
+        "$(join_words '456' 'somehost' '123' '-1' 'someapp')" \
+        "$(join_words '567' 'somehost' '234' '-1' 'anotherapp' 'AnotherApp Window')" \
+    )"
     main -m someapp
 
     assertNull 'minimize_active_window() not called' "$minimize_active_window_called"
