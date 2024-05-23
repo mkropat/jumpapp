@@ -17,7 +17,6 @@ setUp() {
     minimize_active_window_called=
     die_called=
     exec_command_called=
-    focus_window_by_class_called=
     fork_command_called=
 }
 
@@ -30,12 +29,14 @@ function join_lines {
 }
 
 it_echoes_help_when_run_with_0_args() {
-    local output=$(main)
+    local output
+    output=$(main)
     [[ "$output" == Usage:*  ]] || fail 'Output does not begin with "Usage:"'
 }
 
 it_echoes_help_when_run_with_dash_h() {
-    local output=$(main -h)
+    local output
+    output=$(main -h)
     [[ "$output" == Usage:*  ]] || fail 'Output does not begin with "Usage:"'
 }
 
@@ -46,8 +47,8 @@ it_throws_an_error_when_wmctrl_is_not_installed() {
 }
 
 it_calls_fork_command_when_process_is_not_running() {
-    focus_window_by_class_val=1
-    local output_file=$(mktemp)
+    local output_file
+    output_file=$(mktemp)
 
     main someapp >|"$output_file"
 
@@ -59,9 +60,9 @@ it_calls_fork_command_when_process_is_not_running() {
 }
 
 it_calls_exec_command_when_called_with_dash_n_and_process_is_not_running() {
-    focus_window_by_class_val=1
     exec_command_cmd=
-    local output_file=$(mktemp)
+    local output_file
+    output_file=$(mktemp)
 
     main -n someapp >|"$output_file"
 
@@ -402,7 +403,7 @@ it_calls_center_cursor_on_window_when_-C_is_passed() {
 it_calls_list_pids_for_command_without_the_full_path() {
     list_pids_for_command_cmd_file=$(mktemp)
     main /usr/bin/someapp >/dev/null
-    assertEquals someapp "$(<$list_pids_for_command_cmd_file)"
+    assertEquals someapp "$(<"$list_pids_for_command_cmd_file")"
     rm -f "$list_pids_for_command_cmd_file"
 }
 
@@ -418,7 +419,8 @@ it_calls_fork_command_if_-p_option_passed_and_a_command_argument_is_passed() {
 it_prints_count_0_when_called_with_-L() {
     list_windows_output=''
 
-    local output=$(main -L someapp)
+    local output
+    output=$(main -L someapp)
     [[ "$output" == "Matched Windows [0]" ]] || fail 'Output is not "Matched Windows [0]"'
 }
 
@@ -429,7 +431,8 @@ it_prints_count_2_when_called_with_-L_and_2_match() {
         "$(join_words '678' 'somehost' '123' '-1' 'someapp' 'SomeApp Window #2')" \
     )"
 
-    local output=$(main -L someapp)
+    local output
+    output=$(main -L someapp)
     [[ "$output" == "Matched Windows [2]"* ]] || fail 'Output does not start with "Matched Windows [2]"'
 }
 
@@ -440,7 +443,8 @@ it_prints_matching_windows_when_called_with_-L() {
         "$(join_words '678' 'somehost' '123' '-1' 'someapp' 'SomeApp Window #2')" \
     )"
 
-    local output=$(main -L someapp)
+    local output
+    output=$(main -L someapp)
     [[ "$output" == *"456 somehost 123 -1 someapp: SomeApp Window #1"* ]] || fail 'Output does not list Window #1'
     [[ "$output" != *"anotherapp"* ]] || fail 'Output lists anotherapp'
     [[ "$output" == *"678 somehost 123 -1 someapp: SomeApp Window #2"* ]] || fail 'Output does not list Window #2'
@@ -553,7 +557,7 @@ list_stacking_order() {
 #   Derived from Gary Bernhardt's screencast #68
 #   (https://www.destroyallsoftware.com/screencasts/catalog/test-driving-shell-scripts)
 suite() {
-    tests=( $(grep ^it_ "$0" | cut -d '(' -f 1) )
+    mapfile tests < <(grep ^it_ "$0" | cut -d '(' -f 1)
     for name in "${tests[@]}"; do
         suite_addTest "$name"
     done
@@ -562,6 +566,6 @@ suite() {
 if hash shunit2 2>/dev/null; then
     source shunit2
 else
-    echo 'Error: shunit2(1) could not be located. Please install it on your $PATH.' >&2
+    echo "Error: shunit2(1) could not be located. Please install it on your \$PATH." >&2
     exit 1
 fi

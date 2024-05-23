@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 show_usage() {
-    local cmd=$(basename "${BASH_SOURCE[0]}")
+    local cmd
+    cmd=$(basename "${BASH_SOURCE[0]}")
     echo "Usage: $cmd [OPTION]... COMMAND [ARG]...
 
 Jump to (focus) the first open window for an application, if it's running.
@@ -46,6 +47,7 @@ main() {
             w) workspace_filter="$(get_active_workspace)"; force=1 ;;
             R) keep_workspace=1 ;;
             C) mouse_center=1 ;;
+            *) exit 255
         esac
     done
     shift $(( OPTIND - 1 ))
@@ -83,7 +85,8 @@ check_for_prerequisites() {
 
 jumpapp() {
     if [[ -z "$cmdid" ]]; then
-        local cmdid=$(basename "$cmd")
+        local cmdid
+        cmdid=$(basename "$cmd")
     fi
 
     if [[ -z "$classid" ]]; then
@@ -102,7 +105,8 @@ jumpapp() {
          && [[ "$(get_active_windowid)" -eq "${windowids[0]}" ]]; then
         minimize_active_window
     elif (( ${#windowids[@]} )) && ! needs_passthrough "$@"; then
-        local window=$(get_subsequent_window "${windowids[@]}")
+        local window
+        window=$(get_subsequent_window "${windowids[@]}")
         if [[ -n "$keep_workspace" ]]; then
             keep_workspace_activate_window "$window" ||
                 die "Error: unable to focus window for '$cmdid'"
@@ -157,7 +161,8 @@ where_class_or_pid_matches() {
     local target_class=$1
     shift
 
-    local local_hostname=$(get_hostname)
+    local local_hostname
+    local_hostname=$(get_hostname)
 
     local windowid hostname pid workspace class title
     while IFS="$SEP" read -r windowid hostname pid workspace class title; do
@@ -219,7 +224,8 @@ get_subsequent_window() {
 }
 
 _get_subsequent_window() {
-    local active_window=$(get_active_windowid)
+    local active_window
+    active_window=$(get_active_windowid)
 
     if ! is_num_in_array "$active_window" "$@"; then
         if [[ -n $in_reverse ]]; then
@@ -241,7 +247,7 @@ get_oldest_focused_window() {
     local windows_in_stacking_order=($(list_stacking_order))
 
     for window in ${windows_in_stacking_order[@]}; do
-        get_matching_window_from_list $window "$@"
+        get_matching_window_from_list "$window" "$@"
     done
 }
 
@@ -249,7 +255,7 @@ get_most_recently_focused_window() {
     local windows_in_stacking_order=($(list_stacking_order | reverse_words))
 
     for window in ${windows_in_stacking_order[@]}; do
-        get_matching_window_from_list $window "$@"
+        get_matching_window_from_list "$window" "$@"
     done
 }
 
@@ -259,7 +265,7 @@ get_matching_window_from_list() {
 
     for window in ${window_list[@]}; do
         if [[ $window_to_search_for -eq $window ]]; then
-            printf '%s\n' $window
+            printf '%s\n' "$window"
             return
         fi
     done
@@ -386,24 +392,24 @@ list_windows() {
 }
 
 get_active_windowid() {
-    local name windowid
-    read name windowid < <(xprop -root ' $0\n' _NET_ACTIVE_WINDOW)
+    local _name windowid
+    read -r _name windowid < <(xprop -root ' $0\n' _NET_ACTIVE_WINDOW)
     printf '%s\n' "$windowid"
 }
 
 list_stacking_order() {
-    local name ids
-    read -r name ids < <(xprop -root ' $0+\n' _NET_CLIENT_LIST_STACKING)
+    local _name ids
+    read -r _name ids < <(xprop -root ' $0+\n' _NET_CLIENT_LIST_STACKING)
     if [[ "$ids" == 'not found.' ]] || [[ "$ids" =~ 'no such atom' ]]; then
         # in case the window manager doesn't support _NET_CLIENT_LIST_STACKING (p.e. dwm)
-        read -r name ids < <(xprop -root ' $0+\n' _NET_CLIENT_LIST)
+        read -r _name ids < <(xprop -root ' $0+\n' _NET_CLIENT_LIST)
     fi
     printf '%s\n' "$ids" | tr ',' ' '
 }
 
 get_window_types() {
-    local name window_types
-    read -r name window_types < <(xprop -id "$1" ' $0+\n' _NET_WM_WINDOW_TYPE)
+    local _name window_types
+    read -r _name window_types < <(xprop -id "$1" ' $0+\n' _NET_WM_WINDOW_TYPE)
     if [[ "$window_types" != 'not found.' ]]; then
         printf '%s\n' "$window_types"
     fi
