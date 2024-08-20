@@ -16,8 +16,8 @@ FILES	= t README.md LICENSE.txt Makefile jumpapp jumpappify-desktop-entry
 all: jumpapp.1
 
 jumpapp.1: README.man.md
-	@hash pandoc 2>/dev/null || { echo "ERROR: can't find pandoc. Have you installed it?" >&2; exit 1; }
-	pandoc --from=markdown --standalone --output="$@" "$<"
+	@which pandoc 2>/dev/null || { echo "ERROR: can't find pandoc. Have you installed it?" >&2; exit 1; }
+	pandoc --from=markdown --standalone --output=$@ README.man.md
 
 README.man.md: README.md
 	echo '% JUMPAPP(1) jumpapp | $(VERSION)' >"$@"
