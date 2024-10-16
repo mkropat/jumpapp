@@ -5,7 +5,7 @@ show_usage() {
     echo "Usage: $cmd [OPTION]... COMMAND [ARG]...
 
 Jump to (focus) the first open window for an application, if it's running.
-Otherwise, launch COMMAND (with opitonal ARGs) to start the application.
+Otherwise, launch COMMAND (with optional ARGs) to start the application.
 
 Options:
   -r -- cycle through windows in reverse order
